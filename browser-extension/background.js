@@ -86,6 +86,7 @@ chrome.runtime.onMessage.addListener(
         sendResponse
     ) {
 
+        // GET RESTRICTED SITES
         if (
             message.action ===
             "getRestrictedSites"
@@ -115,5 +116,41 @@ chrome.runtime.onMessage.addListener(
 
             return true;
         }
+
+
+        // GET TIMER STATUS
+        if (
+            message.action ===
+            "getTimerStatus"
+        ) {
+
+            fetch(
+                "http://localhost:8080/timer"
+            )
+            .then(response =>
+                response.json()
+            )
+            .then(data => {
+
+                sendResponse(data);
+
+            })
+            .catch(error => {
+
+                console.log(
+                    "LockIn timer status error:",
+                    error
+                );
+
+                sendResponse({
+                    active: false,
+                    mode: "unknown"
+                });
+
+            });
+
+            return true;
+        }
+
     }
 );
