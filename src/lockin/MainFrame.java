@@ -29,53 +29,164 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
 
         // ---------- RIGHT SIDE: gradient area with the hamburger button ----------
-        timerArea = new GradientPanel(new Color(0xA52A62), new Color(0xF8B4E0));
+        timerArea = new GradientPanel(
+                new Color(0xA52A62),
+                new Color(0xF8B4E0)
+        );
+
         timerArea.setLayout(new BorderLayout());
 
         JButton hamburger = new JButton(new HamburgerIcon());
         hamburger.setBorderPainted(false);
         hamburger.setContentAreaFilled(false);
         hamburger.setFocusPainted(false);
-        hamburger.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        hamburger.addActionListener(e -> toggleDrawer());
+        hamburger.setCursor(
+                Cursor.getPredefinedCursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
 
-        JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        hamburger.addActionListener(
+                e -> toggleDrawer()
+        );
+
+        JPanel topBar = new JPanel(
+                new FlowLayout(
+                        FlowLayout.LEFT,
+                        10,
+                        10
+                )
+        );
+
         topBar.setOpaque(false);
         topBar.add(hamburger);
-        timerArea.add(topBar, BorderLayout.NORTH);
 
-        // TODO (Laurice's panel): replace this label with  timerArea.add(new lauriceTimerPanel(), BorderLayout.CENTER);
+        timerArea.add(
+                topBar,
+                BorderLayout.NORTH
+        );
+
+        // TODO (Laurice's panel): replace this label with
+        // timerArea.add(new lauriceTimerPanel(), BorderLayout.CENTER);
         // her panel must call setOpaque(false) so the gradient shows through
-        JLabel timerPlaceholder = new JLabel("25:00", SwingConstants.CENTER);
-        timerPlaceholder.setFont(new Font("Serif", Font.BOLD, 96));
-        timerPlaceholder.setForeground(CREAM);
-        timerArea.add(timerPlaceholder, BorderLayout.CENTER);
+        JLabel timerPlaceholder = new JLabel(
+                "25:00",
+                SwingConstants.CENTER
+        );
 
-        add(timerArea, BorderLayout.CENTER);
+        timerPlaceholder.setFont(
+                new Font(
+                        "Serif",
+                        Font.BOLD,
+                        96
+                )
+        );
+
+        timerPlaceholder.setForeground(CREAM);
+
+        timerArea.add(
+                timerPlaceholder,
+                BorderLayout.CENTER
+        );
+
+        add(
+                timerArea,
+                BorderLayout.CENTER
+        );
 
         // ---------- LEFT SIDE: drawer = tabs column + content panel ----------
-        JPanel tabsGrid = new JPanel(new GridLayout(4, 1));
-        tabsGrid.setBackground(TAB_BG);
-        addTab(tabsGrid, "TIME", "time");
-        addTab(tabsGrid, "TRACKER", "tracker");
-        addTab(tabsGrid, "THEMES", "themes");
-        addTab(tabsGrid, "SETTINGS", "settings");
 
-        JPanel tabsHolder = new JPanel(new BorderLayout());
+        JPanel tabsGrid = new JPanel(
+                new GridLayout(4, 1)
+        );
+
+        tabsGrid.setBackground(TAB_BG);
+
+        addTab(
+                tabsGrid,
+                "TIME",
+                "time"
+        );
+
+        addTab(
+                tabsGrid,
+                "TRACKER",
+                "tracker"
+        );
+
+        addTab(
+                tabsGrid,
+                "THEMES",
+                "themes"
+        );
+
+        addTab(
+                tabsGrid,
+                "SETTINGS",
+                "settings"
+        );
+
+        JPanel tabsHolder = new JPanel(
+                new BorderLayout()
+        );
+
         tabsHolder.setBackground(TAB_BG);
-        tabsHolder.add(tabsGrid, BorderLayout.NORTH);
+
+        tabsHolder.add(
+                tabsGrid,
+                BorderLayout.NORTH
+        );
 
         // screens: swap each placeholder for the real panel when it's ready
-        contentPanel.add(placeholder("Time settings (Laurice)"), "time");
-        contentPanel.add(new ramiraTrackerPanel(), "tracker");
-        contentPanel.add(placeholder("Themes (Julianne)"), "themes");
-        contentPanel.add(placeholder("Settings (Laurice)"), "settings");
-        contentPanel.setPreferredSize(new Dimension(380, 100));
+        contentPanel.add(
+                placeholder(
+                        "Time settings (Laurice)"
+                ),
+                "time"
+        );
 
-        drawer.add(tabsHolder, BorderLayout.WEST);
-        drawer.add(contentPanel, BorderLayout.CENTER);
-        drawer.setVisible(false); // starts closed: only the hamburger shows
-        add(drawer, BorderLayout.WEST);
+        contentPanel.add(
+                new ramiraTrackerPanel(),
+                "tracker"
+        );
+
+        contentPanel.add(
+                placeholder(
+                        "Themes (Julianne)"
+                ),
+                "themes"
+        );
+
+        contentPanel.add(
+                placeholder(
+                        "Settings (Laurice)"
+                ),
+                "settings"
+        );
+
+        contentPanel.setPreferredSize(
+                new Dimension(
+                        380,
+                        100
+                )
+        );
+
+        drawer.add(
+                tabsHolder,
+                BorderLayout.WEST
+        );
+
+        drawer.add(
+                contentPanel,
+                BorderLayout.CENTER
+        );
+
+        drawer.setVisible(false);
+
+        add(
+                drawer,
+                BorderLayout.WEST
+        );
 
         selectTab("time");
     }
@@ -83,91 +194,253 @@ public class MainFrame extends JFrame {
     // ---------- helpers ----------
 
     private void toggleDrawer() {
-        drawer.setVisible(!drawer.isVisible());
+
+        drawer.setVisible(
+                !drawer.isVisible()
+        );
+
         getContentPane().revalidate();
         getContentPane().repaint();
     }
 
-    private void addTab(JPanel grid, String label, String key) {
-        Font base = new Font("Serif", Font.PLAIN, 17);
-        Map<TextAttribute, Object> attrs = new HashMap<TextAttribute, Object>(base.getAttributes());
-        attrs.put(TextAttribute.TRACKING, 0.25); // letter spacing like the design
+    private void addTab(
+            JPanel grid,
+            String label,
+            String key
+    ) {
+
+        Font base = new Font(
+                "Serif",
+                Font.PLAIN,
+                17
+        );
+
+        Map<TextAttribute, Object> attrs =
+                new HashMap<TextAttribute, Object>(
+                        base.getAttributes()
+                );
+
+        attrs.put(
+                TextAttribute.TRACKING,
+                0.25
+        );
 
         JButton b = new JButton(label);
-        b.setFont(base.deriveFont(attrs));
-        b.setForeground(MAROON);
-        b.setFocusPainted(false);
-        b.setContentAreaFilled(false);
-        b.setOpaque(true);
-        b.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0x8A6A5A)));
-        b.setPreferredSize(new Dimension(150, 60));
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.addActionListener(e -> selectTab(key));
 
-        tabButtons.put(key, b);
+        b.setFont(
+                base.deriveFont(attrs)
+        );
+
+        b.setForeground(MAROON);
+
+        b.setFocusPainted(false);
+
+        b.setContentAreaFilled(false);
+
+        b.setOpaque(true);
+
+        b.setBorder(
+                BorderFactory.createMatteBorder(
+                        0,
+                        0,
+                        1,
+                        0,
+                        new Color(0x8A6A5A)
+                )
+        );
+
+        b.setPreferredSize(
+                new Dimension(
+                        150,
+                        60
+                )
+        );
+
+        b.setCursor(
+                Cursor.getPredefinedCursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        b.addActionListener(
+                e -> selectTab(key)
+        );
+
+        tabButtons.put(
+                key,
+                b
+        );
+
         grid.add(b);
     }
 
     private void selectTab(String key) {
-        cardLayout.show(contentPanel, key);
-        for (Map.Entry<String, JButton> entry : tabButtons.entrySet()) {
-            entry.getValue().setBackground(entry.getKey().equals(key) ? TAB_SELECTED : TAB_BG);
+
+        cardLayout.show(
+                contentPanel,
+                key
+        );
+
+        for (
+                Map.Entry<String, JButton> entry :
+                tabButtons.entrySet()
+        ) {
+
+            entry.getValue().setBackground(
+                    entry.getKey().equals(key)
+                            ? TAB_SELECTED
+                            : TAB_BG
+            );
         }
     }
 
-    private JPanel placeholder(String text) {
-        JPanel p = new JPanel(new GridBagLayout());
+    private JPanel placeholder(
+            String text
+    ) {
+
+        JPanel p = new JPanel(
+                new GridBagLayout()
+        );
+
         p.setBackground(PANEL_BG);
+
         JLabel l = new JLabel(text);
-        l.setFont(new Font("Serif", Font.PLAIN, 18));
+
+        l.setFont(
+                new Font(
+                        "Serif",
+                        Font.PLAIN,
+                        18
+                )
+        );
+
         l.setForeground(MAROON);
+
         p.add(l);
+
         return p;
     }
 
     // Julianne's ThemeManager will call this to change the background gradient
-    public void setThemeColors(Color top, Color bottom) {
-        timerArea.setColors(top, bottom);
+    public void setThemeColors(
+            Color top,
+            Color bottom
+    ) {
+
+        timerArea.setColors(
+                top,
+                bottom
+        );
     }
 
     // ---------- small drawing classes ----------
 
-    private static class GradientPanel extends JPanel {
+    private static class GradientPanel
+            extends JPanel {
+
         private Color top;
         private Color bottom;
 
-        GradientPanel(Color top, Color bottom) {
+        GradientPanel(
+                Color top,
+                Color bottom
+        ) {
+
             this.top = top;
             this.bottom = bottom;
         }
 
-        void setColors(Color top, Color bottom) {
+        void setColors(
+                Color top,
+                Color bottom
+        ) {
+
             this.top = top;
             this.bottom = bottom;
+
             repaint();
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
+        protected void paintComponent(
+                Graphics g
+        ) {
+
             super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setPaint(new GradientPaint(0, 0, top, getWidth(), getHeight(), bottom));
-            g2.fillRect(0, 0, getWidth(), getHeight());
+
+            Graphics2D g2 =
+                    (Graphics2D) g.create();
+
+            g2.setPaint(
+                    new GradientPaint(
+                            0,
+                            0,
+                            top,
+                            getWidth(),
+                            getHeight(),
+                            bottom
+                    )
+            );
+
+            g2.fillRect(
+                    0,
+                    0,
+                    getWidth(),
+                    getHeight()
+            );
+
             g2.dispose();
         }
     }
 
-    private static class HamburgerIcon implements Icon {
-        public int getIconWidth() { return 30; }
-        public int getIconHeight() { return 24; }
+    private static class HamburgerIcon
+            implements Icon {
 
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            Graphics2D g2 = (Graphics2D) g.create();
+        public int getIconWidth() {
+            return 30;
+        }
+
+        public int getIconHeight() {
+            return 24;
+        }
+
+        public void paintIcon(
+                Component c,
+                Graphics g,
+                int x,
+                int y
+        ) {
+
+            Graphics2D g2 =
+                    (Graphics2D) g.create();
+
             g2.setColor(CREAM);
-            g2.setStroke(new BasicStroke(3f));
-            g2.drawLine(x + 2, y + 4, x + 28, y + 4);
-            g2.drawLine(x + 2, y + 12, x + 28, y + 12);
-            g2.drawLine(x + 2, y + 20, x + 28, y + 20);
+
+            g2.setStroke(
+                    new BasicStroke(3f)
+            );
+
+            g2.drawLine(
+                    x + 2,
+                    y + 4,
+                    x + 28,
+                    y + 4
+            );
+
+            g2.drawLine(
+                    x + 2,
+                    y + 12,
+                    x + 28,
+                    y + 12
+            );
+
+            g2.drawLine(
+                    x + 2,
+                    y + 20,
+                    x + 28,
+                    y + 20
+            );
+
             g2.dispose();
         }
     }
