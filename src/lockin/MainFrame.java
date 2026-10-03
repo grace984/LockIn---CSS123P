@@ -325,25 +325,25 @@ public class MainFrame extends JFrame {
 
         JPanel soundSettings = settingsGroup("Timer Sound",
                 new String[]{"Sound 1", "Sound 2"}, 1);
-        soundSettings.setBounds(58, 190, 410, 128);
+        soundSettings.setBounds(42, 195, 410, 136);
 
         JPanel warningSettings = settingsGroup("Tracker Warning Message",
                 new String[]{"Version 1", "Version 2", "Version 3"}, 0);
-        warningSettings.setBounds(58, 354, 410, 164);
+        warningSettings.setBounds(42, 354, 410, 178);
 
         JLabel privacyTitle = new JLabel("Privacy Statement");
         privacyTitle.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         privacyTitle.setForeground(MAROON);
-        privacyTitle.setBounds(58, 542, 350, 30);
+        privacyTitle.setBounds(58, 547, 350, 30);
 
-        JLabel privacy = new JLabel("<html><div style='width:370px'>LockIn only monitors websites added to your distraction tracker during active Work sessions. No account or personal information is required. Your settings and preferences are stored locally on your device.</div></html>");
+        JLabel privacy = new JLabel("<html>LockIn only monitors websites added to your distraction<br>tracker during active Work sessions. No account or<br>personal information is required. Your settings and<br>preferences are stored locally on your device.</html>");
         privacy.setFont(new Font("Times New Roman", Font.ITALIC, 14));
         privacy.setForeground(MAROON);
         JPanel privacyCard = new SoftPanel(new Color(0xE9D6BF), 20);
         privacyCard.setLayout(new BorderLayout());
         privacyCard.setBorder(new EmptyBorder(12, 12, 12, 12));
-        privacyCard.add(privacy, BorderLayout.CENTER);
-        privacyCard.setBounds(42, 580, 410, 156);
+        privacyCard.add(privacy, BorderLayout.NORTH);
+        privacyCard.setBounds(42, 598, 410, 156);
 
         panel.add(title);
         panel.add(subtitle);
@@ -355,13 +355,14 @@ public class MainFrame extends JFrame {
     }
 
     private JPanel settingsGroup(String label, String[] values, int selectedIndex) {
-        JPanel section = new JPanel(new BorderLayout(0, 8));
+        JPanel section = new JPanel(null);
         section.setOpaque(false);
 
         JLabel heading = new JLabel(label);
         heading.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         heading.setForeground(MAROON);
-        section.add(heading, BorderLayout.NORTH);
+        heading.setBounds(16, 0, 394, 30);
+        section.add(heading);
 
         JPanel options = new SoftPanel(new Color(0xE9D6BF), 20);
         options.setLayout(new BoxLayout(options, BoxLayout.Y_AXIS));
@@ -383,7 +384,8 @@ public class MainFrame extends JFrame {
                 options.add(Box.createVerticalStrut(6));
             }
         }
-        section.add(options, BorderLayout.CENTER);
+        options.setBounds(0, 46, 410, values.length == 2 ? 90 : 132);
+        section.add(options);
         return section;
     }
 
