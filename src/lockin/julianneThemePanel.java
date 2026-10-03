@@ -14,7 +14,7 @@ public class julianneThemePanel extends JPanel
     // =========================================================
 
     private static final Color PANEL_BACKGROUND =
-            new Color(0xFFF5E4);
+            new Color(0xF7E9DF);
 
     private static final Color MAROON =
             new Color(0x59132C);
@@ -66,9 +66,7 @@ public class julianneThemePanel extends JPanel
 
         setOpaque(true);
 
-        setLayout(
-                new BorderLayout()
-        );
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         // -----------------------------------------------------
         // CREATE THE 4 x 4 GRID
@@ -80,11 +78,12 @@ public class julianneThemePanel extends JPanel
                 );
 
         gridPanel.setOpaque(false);
+        gridPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
 
         GridBagConstraints gbc =
                 new GridBagConstraints();
 
-        gbc.weightx = 1.0;
+        gbc.weightx = 0.0;
         gbc.weighty = 1.0;
 
         gbc.anchor =
@@ -96,9 +95,9 @@ public class julianneThemePanel extends JPanel
         gbc.insets =
                 new Insets(
                         9,
-                        7,
+                        11,
                         9,
-                        7
+                        11
                 );
 
         for (
@@ -131,10 +130,35 @@ public class julianneThemePanel extends JPanel
             );
         }
 
-        add(
-                gridPanel,
-                BorderLayout.CENTER
-        );
+        JLabel title = new JLabel("THEMES");
+        title.setFont(new Font("Times New Roman", Font.PLAIN, 34));
+        title.setForeground(MAROON);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel subtitle = new JLabel("Choose your gradient");
+        subtitle.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        subtitle.setForeground(MAROON);
+        subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPanel headerPanel = new JPanel();
+        headerPanel.setOpaque(false);
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(96, 0, 0, 0));
+        headerPanel.setPreferredSize(new Dimension(471, 199));
+        headerPanel.setMinimumSize(new Dimension(471, 199));
+        headerPanel.setMaximumSize(new Dimension(471, 199));
+        headerPanel.add(title);
+        headerPanel.add(Box.createVerticalStrut(2));
+        headerPanel.add(subtitle);
+
+        gridPanel.setPreferredSize(new Dimension(471, 392));
+        gridPanel.setMinimumSize(new Dimension(471, 392));
+        gridPanel.setMaximumSize(new Dimension(471, 392));
+
+        headerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        gridPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(headerPanel);
+        add(gridPanel);
 
         // -----------------------------------------------------
         // RESET BUTTON
@@ -158,10 +182,13 @@ public class julianneThemePanel extends JPanel
                 resetButton
         );
 
-        add(
-                bottomPanel,
-                BorderLayout.SOUTH
-        );
+        bottomPanel.setPreferredSize(new Dimension(471, 52));
+        bottomPanel.setMinimumSize(new Dimension(471, 52));
+        bottomPanel.setMaximumSize(new Dimension(471, 52));
+        bottomPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(Box.createVerticalStrut(2));
+        add(bottomPanel);
+        add(Box.createVerticalGlue());
 
         // -----------------------------------------------------
         // CHECKMARK ANIMATION TIMER
@@ -211,14 +238,14 @@ public class julianneThemePanel extends JPanel
 
         JButton button =
                 new JButton(
-                        "Reset to Default"
+                        "[  Reset to Default  ]"
                 );
 
         button.setFont(
                 new Font(
                         "Times New Roman",
                         Font.PLAIN,
-                        15
+                        22
                 )
         );
 
@@ -226,20 +253,10 @@ public class julianneThemePanel extends JPanel
                 MAROON
         );
 
-        button.setBackground(
-                PANEL_BACKGROUND
-        );
-
         button.setFocusPainted(false);
-
-        button.setOpaque(true);
-
-        button.setBorder(
-                BorderFactory.createLineBorder(
-                        MAROON,
-                        1
-                )
-        );
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setOpaque(false);
 
         button.setCursor(
                 Cursor.getPredefinedCursor(
@@ -249,8 +266,8 @@ public class julianneThemePanel extends JPanel
 
         button.setPreferredSize(
                 new Dimension(
-                        180,
-                        38
+                        260,
+                        42
                 )
         );
 
