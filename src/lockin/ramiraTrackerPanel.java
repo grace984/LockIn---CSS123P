@@ -344,7 +344,7 @@ public class ramiraTrackerPanel extends JPanel {
             g2.setColor(BAR_BG);
             g2.fillRoundRect(track.x, track.y, track.width, track.height, track.width, track.width);
 
-            // when there's nothing to scroll yet, still show a thumb like the design
+            //hi when there's nothing to scroll yet, still show a thumb like the design
             Rectangle thumb = getThumbBounds();
             int y = thumb.height > 0 ? thumb.y : track.y;
             int h = thumb.height > 0 ? thumb.height : track.height / 3;
