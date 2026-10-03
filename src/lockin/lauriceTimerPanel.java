@@ -13,13 +13,20 @@ public class lauriceTimerPanel extends JPanel {
     private int timeLeft = workDuration;
 
     private boolean workSession = true;
+    private boolean hasStarted = false;
 
     private JLabel timerLabel;
 
     private JButton startButton;
+    private JButton pauseButton;
+    private JButton resumeButton;
+    private JButton resetButton;
+
     private JToggleButton workButton;
     private JToggleButton breakButton;
     private ButtonGroup sessionButtons;
+
+    private JPanel controlPanel;
 
     private Timer timer;
 
@@ -40,25 +47,32 @@ public class lauriceTimerPanel extends JPanel {
 
         workButton = new ModeButton("Work", 144);
         breakButton = new ModeButton("Break", 142);
+
         workButton.setSelected(true);
+
         sessionButtons = new ButtonGroup();
         sessionButtons.add(workButton);
         sessionButtons.add(breakButton);
 
-        startButton = new StartButton();
-        startButton.addActionListener(e -> {
-            if (timer.isRunning()) {
-                pauseTimer();
-            } else {
-                startTimer();
-            }
-        });
+        startButton = new StartButton("Start");
+
+        pauseButton = new IconButton("pause");
+        resumeButton = new IconButton("play");
+        resetButton = new IconButton("reset");
+
+        controlPanel = new JPanel(
+                new FlowLayout(FlowLayout.CENTER, 10, 0)
+        );
+
+        controlPanel.setOpaque(false);
+
         workButton.addActionListener(e -> selectSession(true));
         breakButton.addActionListener(e -> selectSession(false));
     }
 
     private void createLayout() {
         setLayout(new BorderLayout());
+
         setPreferredSize(new Dimension(638, 520));
         setMinimumSize(new Dimension(638, 520));
         setMaximumSize(new Dimension(638, 520));
@@ -67,22 +81,33 @@ public class lauriceTimerPanel extends JPanel {
         JPanel content = new JPanel();
         content.setOpaque(false);
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.setBorder(BorderFactory.createEmptyBorder(75, 0, 70, 0));
+        content.setBorder(
+                BorderFactory.createEmptyBorder(75, 0, 70, 0)
+        );
 
-        JPanel modeRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 0));
+        JPanel modeRow = new JPanel(
+                new FlowLayout(FlowLayout.CENTER, 40, 0)
+        );
+
         modeRow.setOpaque(false);
         modeRow.add(workButton);
         modeRow.add(breakButton);
 
         content.add(Box.createVerticalGlue());
+
         modeRow.setAlignmentX(Component.CENTER_ALIGNMENT);
         content.add(modeRow);
+
         content.add(Box.createVerticalStrut(38));
         content.add(timerLabel);
+
         content.add(Box.createVerticalStrut(28));
-        startButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        content.add(startButton);
+
+        controlPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(controlPanel);
+
         content.add(Box.createVerticalGlue());
+
         add(content, BorderLayout.CENTER);
     }
 
@@ -98,25 +123,44 @@ public class lauriceTimerPanel extends JPanel {
     }
 
     private void createButtonActions() {
-        // Actions are attached when each reference control is created.
+        startButton.addActionListener(e -> {
+            hasStarted = true;
+            startTimer();
+        });
+
+        pauseButton.addActionListener(e -> {
+            pauseTimer();
+        });
+
+        resumeButton.addActionListener(e -> {
+            startTimer();
+        });
+
+        resetButton.addActionListener(e -> {
+            resetTimer();
+        });
     }
 
     public void startTimer() {
         timer.start();
-        startButton.setText("Pause");
+        hasStarted = true;
+        updateDisplay();
     }
 
     public void pauseTimer() {
         timer.stop();
-        startButton.setText("Start");
+        updateDisplay();
     }
 
     public void resetTimer() {
         timer.stop();
+
         workSession = true;
         timeLeft = workDuration;
+        hasStarted = false;
+
         workButton.setSelected(true);
-        startButton.setText("Start");
+
         updateDisplay();
     }
 
@@ -137,7 +181,8 @@ public class lauriceTimerPanel extends JPanel {
             workButton.setSelected(true);
         }
 
-        startButton.setText("Start");
+        hasStarted = false;
+
         updateDisplay();
     }
 
@@ -149,15 +194,34 @@ public class lauriceTimerPanel extends JPanel {
                 String.format("%02d:%02d", minutes, seconds)
         );
 
+        controlPanel.removeAll();
+
+        if (!hasStarted) {
+            controlPanel.add(startButton);
+        } else if (timer.isRunning()) {
+            controlPanel.add(pauseButton);
+            controlPanel.add(resetButton);
+        } else {
+            controlPanel.add(resumeButton);
+            controlPanel.add(resetButton);
+        }
+
+        controlPanel.revalidate();
+        controlPanel.repaint();
     }
 
     private void selectSession(boolean work) {
         if (timer.isRunning()) {
             timer.stop();
-            startButton.setText("Start");
         }
+
+        hasStarted = false;
         workSession = work;
-        timeLeft = work ? workDuration : breakDuration;
+
+        timeLeft = work
+                ? workDuration
+                : breakDuration;
+
         updateDisplay();
     }
 
@@ -187,16 +251,20 @@ public class lauriceTimerPanel extends JPanel {
 
     public void setWorkDuration(int seconds) {
         workDuration = Math.max(60, seconds);
+
         if (workSession && !timer.isRunning()) {
             timeLeft = workDuration;
+            hasStarted = false;
             updateDisplay();
         }
     }
 
     public void setBreakDuration(int seconds) {
         breakDuration = Math.max(60, seconds);
+
         if (!workSession && !timer.isRunning()) {
             timeLeft = breakDuration;
+            hasStarted = false;
             updateDisplay();
         }
     }
@@ -204,22 +272,53 @@ public class lauriceTimerPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(new Color(0xFFF5E4 | 0x1C000000, true));
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 124, 124);
+
+        g2.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON
+        );
+
+        g2.setColor(
+                new Color(
+                        0xFFF5E4 | 0x1C000000,
+                        true
+                )
+        );
+
+        g2.fillRoundRect(
+                0,
+                0,
+                getWidth(),
+                getHeight(),
+                124,
+                124
+        );
+
         g2.dispose();
     }
 
     private static class ModeButton extends JToggleButton {
+
         ModeButton(String label, int width) {
             super(label);
-            setFont(new Font("Times New Roman", Font.BOLD, 26));
-            Dimension size = new Dimension(width, 46);
+
+            setFont(
+                    new Font(
+                            "Times New Roman",
+                            Font.BOLD,
+                            26
+                    )
+            );
+
+            Dimension size =
+                    new Dimension(width, 46);
+
             setPreferredSize(size);
             setMinimumSize(size);
             setMaximumSize(size);
+
             setBorderPainted(false);
             setContentAreaFilled(false);
             setFocusPainted(false);
@@ -228,42 +327,102 @@ public class lauriceTimerPanel extends JPanel {
 
         @Override
         protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
+            Graphics2D g2 =
+                    (Graphics2D) g.create();
+
+            g2.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+            );
+
             boolean active = isSelected();
-            // Draw the full control ourselves so both session modes retain a
-            // continuous, symmetric outline on every look and feel.
+
             int inset = 1;
             int arc = getHeight() - inset * 2;
+
             if (active) {
                 g2.setColor(CREAM);
-                g2.fillRoundRect(inset, inset, getWidth() - inset * 2,
-                        getHeight() - inset * 2, arc, arc);
+
+                g2.fillRoundRect(
+                        inset,
+                        inset,
+                        getWidth() - inset * 2,
+                        getHeight() - inset * 2,
+                        arc,
+                        arc
+                );
             } else {
                 g2.setColor(CREAM);
-                g2.setStroke(new BasicStroke(2f));
-                g2.drawRoundRect(inset, inset, getWidth() - inset * 2,
-                        getHeight() - inset * 2, arc, arc);
+                g2.setStroke(
+                        new BasicStroke(2f)
+                );
+
+                g2.drawRoundRect(
+                        inset,
+                        inset,
+                        getWidth() - inset * 2,
+                        getHeight() - inset * 2,
+                        arc,
+                        arc
+                );
             }
+
             g2.setFont(getFont());
-            g2.setColor(active ? BROWN : CREAM);
-            FontMetrics fm = g2.getFontMetrics();
-            int x = (getWidth() - fm.stringWidth(getText())) / 2;
-            int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-            g2.drawString(getText(), x, y);
+            g2.setColor(
+                    active ? BROWN : CREAM
+            );
+
+            FontMetrics fm =
+                    g2.getFontMetrics();
+
+            int x =
+                    (getWidth()
+                            - fm.stringWidth(getText()))
+                            / 2;
+
+            int y =
+                    (getHeight()
+                            - fm.getHeight())
+                            / 2
+                            + fm.getAscent();
+
+            g2.drawString(
+                    getText(),
+                    x,
+                    y
+            );
+
             g2.dispose();
         }
     }
 
     private static class StartButton extends JButton {
-        StartButton() {
-            super("Start");
-            setFont(new Font("Times New Roman", Font.BOLD, 36));
+
+        StartButton(String text) {
+            super(text);
+
+            setFont(
+                    new Font(
+                            "Times New Roman",
+                            Font.BOLD,
+                            36
+                    )
+            );
+
             setForeground(BROWN);
-            setPreferredSize(new Dimension(174, 56));
-            setMinimumSize(new Dimension(174, 56));
-            setMaximumSize(new Dimension(174, 56));
+
+            setPreferredSize(
+                    new Dimension(174, 56)
+            );
+
+            setMinimumSize(
+                    new Dimension(174, 56)
+            );
+
+            setMaximumSize(
+                    new Dimension(174, 56)
+            );
+
             setBorderPainted(false);
             setContentAreaFilled(false);
             setFocusPainted(false);
@@ -272,17 +431,181 @@ public class lauriceTimerPanel extends JPanel {
 
         @Override
         protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
+            Graphics2D g2 =
+                    (Graphics2D) g.create();
+
+            g2.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+            );
+
             g2.setColor(CREAM);
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), getHeight(), getHeight());
+
+            g2.fillRoundRect(
+                    0,
+                    0,
+                    getWidth(),
+                    getHeight(),
+                    getHeight(),
+                    getHeight()
+            );
+
             g2.setFont(getFont());
             g2.setColor(BROWN);
-            FontMetrics fm = g2.getFontMetrics();
-            int x = (getWidth() - fm.stringWidth(getText())) / 2;
-            int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-            g2.drawString(getText(), x, y);
+
+            FontMetrics fm =
+                    g2.getFontMetrics();
+
+            int x =
+                    (getWidth()
+                            - fm.stringWidth(getText()))
+                            / 2;
+
+            int y =
+                    (getHeight()
+                            - fm.getHeight())
+                            / 2
+                            + fm.getAscent();
+
+            g2.drawString(
+                    getText(),
+                    x,
+                    y
+            );
+
+            g2.dispose();
+        }
+    }
+
+    private static class IconButton extends JButton {
+
+        private final String type;
+
+        IconButton(String type) {
+            this.type = type;
+
+            setPreferredSize(
+                    new Dimension(58, 56)
+            );
+
+            setMinimumSize(
+                    new Dimension(58, 56)
+            );
+
+            setMaximumSize(
+                    new Dimension(58, 56)
+            );
+
+            setBorderPainted(false);
+            setContentAreaFilled(false);
+            setFocusPainted(false);
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 =
+                    (Graphics2D) g.create();
+
+            g2.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+            );
+
+            g2.setColor(CREAM);
+
+            g2.fillRoundRect(
+                    0,
+                    0,
+                    getWidth(),
+                    getHeight(),
+                    getHeight(),
+                    getHeight()
+            );
+
+            g2.setColor(BROWN);
+
+            if (type.equals("pause")) {
+                g2.fillRoundRect(
+                        21,
+                        17,
+                        6,
+                        22,
+                        4,
+                        4
+                );
+
+                g2.fillRoundRect(
+                        31,
+                        17,
+                        6,
+                        22,
+                        4,
+                        4
+                );
+            }
+
+            if (type.equals("play")) {
+                Polygon triangle =
+                        new Polygon();
+
+                triangle.addPoint(
+                        22,
+                        14
+                );
+
+                triangle.addPoint(
+                        22,
+                        42
+                );
+
+                triangle.addPoint(
+                        40,
+                        28
+                );
+
+                g2.fillPolygon(triangle);
+            }
+
+            if (type.equals("reset")) {
+                g2.setStroke(
+                        new BasicStroke(
+                                3f,
+                                BasicStroke.CAP_ROUND,
+                                BasicStroke.JOIN_ROUND
+                        )
+                );
+
+                g2.drawArc(
+                        18,
+                        17,
+                        22,
+                        22,
+                        45,
+                        285
+                );
+
+                Polygon arrow =
+                        new Polygon();
+
+                arrow.addPoint(
+                        39,
+                        16
+                );
+
+                arrow.addPoint(
+                        39,
+                        23
+                );
+
+                arrow.addPoint(
+                        33,
+                        20
+                );
+
+                g2.fillPolygon(arrow);
+            }
+
             g2.dispose();
         }
     }
