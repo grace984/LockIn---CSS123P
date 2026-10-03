@@ -168,6 +168,25 @@ public class lauriceTimerPanel extends JPanel {
         switchSession();
     }
 
+    public String getRemainingText() {
+        int minutes = timeLeft / 60;
+        int seconds = timeLeft % 60;
+
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    public void pause() {
+        pauseTimer();
+    }
+
+    public void resume() {
+        startTimer();
+    }
+
+    public void reset() {
+        resetTimer();
+    }
+
     private void switchSession() {
         timer.stop();
 
