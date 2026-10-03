@@ -24,9 +24,12 @@ public class MainFrame extends JFrame {
     private JPanel drawer = new JPanel(new BorderLayout());
     private Map<String, JButton> tabButtons = new LinkedHashMap<>();
     private GradientPanel timerArea;
-    private static final int DRAWER_WIDTH = 709;
-    private int displayedDrawerWidth = DRAWER_WIDTH;
-    private boolean drawerOpen = true;
+    private static final int NAVIGATION_WIDTH = 238;
+    private static final int CONTENT_WIDTH = 471;
+    private static final int ACTIVE_TAB_WIDTH = 276;
+    private static final int DRAWER_WIDTH = NAVIGATION_WIDTH + CONTENT_WIDTH;
+    private int displayedDrawerWidth = 0;
+    private boolean drawerOpen = false;
     private AnimationUtils.Animation drawerAnimation;
 
     public MainFrame() {
@@ -93,7 +96,10 @@ public class MainFrame extends JFrame {
 
         JPanel tabsGrid = new JPanel(new GridLayout(4, 1));
         tabsGrid.setOpaque(false);
-        tabsGrid.setPreferredSize(new Dimension(238, 330));
+        // The grid is deliberately wider than the navigation background: an
+        // active tab has a 38px curved overhang, while the content column still
+        // begins at the fixed 238px boundary.
+        tabsGrid.setPreferredSize(new Dimension(ACTIVE_TAB_WIDTH, 330));
 
         addTab(
                 tabsGrid,
@@ -134,14 +140,14 @@ public class MainFrame extends JFrame {
 
         contentPanel.add(createSettingsPanel(), "settings");
 
-        contentPanel.setPreferredSize(new Dimension(471, 810));
+        contentPanel.setPreferredSize(new Dimension(CONTENT_WIDTH, 810));
 
         JPanel columns = new JPanel(null) {
             @Override
             public void doLayout() {
-                tabsHolder.setBounds(0, 0, 238, getHeight());
-                contentPanel.setBounds(238, 0, 471, getHeight());
-                tabsGrid.setBounds(0, 0, 238, 330);
+                tabsHolder.setBounds(0, 0, NAVIGATION_WIDTH, getHeight());
+                contentPanel.setBounds(NAVIGATION_WIDTH, 0, CONTENT_WIDTH, getHeight());
+                tabsGrid.setBounds(0, 0, ACTIVE_TAB_WIDTH, 330);
             }
         };
         columns.setOpaque(false);
@@ -153,7 +159,8 @@ public class MainFrame extends JFrame {
         columns.setComponentZOrder(contentPanel, 1);
         columns.setComponentZOrder(tabsHolder, 2);
 
-        drawer.setPreferredSize(new Dimension(DRAWER_WIDTH, 810));
+        drawer.setPreferredSize(new Dimension(displayedDrawerWidth, 810));
+        drawer.setMinimumSize(new Dimension(0, 0));
         drawer.add(columns, BorderLayout.CENTER);
         drawer.setVisible(true);
 
@@ -220,7 +227,7 @@ public class MainFrame extends JFrame {
         b.setBorderPainted(false);
         b.setContentAreaFilled(false);
         b.setOpaque(false);
-        b.setPreferredSize(new Dimension(238, 82));
+        b.setPreferredSize(new Dimension(ACTIVE_TAB_WIDTH, 82));
 
         b.setCursor(
                 Cursor.getPredefinedCursor(
@@ -478,8 +485,8 @@ public class MainFrame extends JFrame {
 
     private static class TabButton extends JButton {
         private boolean selected;
-        private static final double INACTIVE_WIDTH = 200.0;
-        private static final double ACTIVE_WIDTH = 238.0;
+        private static final double INACTIVE_WIDTH = NAVIGATION_WIDTH;
+        private static final double ACTIVE_WIDTH = ACTIVE_TAB_WIDTH;
         private double displayedWidth = INACTIVE_WIDTH;
         private AnimationUtils.Animation widthAnimation;
 

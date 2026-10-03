@@ -38,8 +38,8 @@ public class lauriceTimerPanel extends JPanel {
         timerLabel.setForeground(CREAM);
         timerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        workButton = new ModeButton("Work");
-        breakButton = new ModeButton("Break");
+        workButton = new ModeButton("Work", 144);
+        breakButton = new ModeButton("Break", 142);
         workButton.setSelected(true);
         sessionButtons = new ButtonGroup();
         sessionButtons.add(workButton);
@@ -213,10 +213,13 @@ public class lauriceTimerPanel extends JPanel {
     }
 
     private static class ModeButton extends JToggleButton {
-        ModeButton(String label) {
+        ModeButton(String label, int width) {
             super(label);
             setFont(new Font("Times New Roman", Font.BOLD, 26));
-            setPreferredSize(new Dimension(144, 48));
+            Dimension size = new Dimension(width, 46);
+            setPreferredSize(size);
+            setMinimumSize(size);
+            setMaximumSize(size);
             setBorderPainted(false);
             setContentAreaFilled(false);
             setFocusPainted(false);
@@ -229,15 +232,17 @@ public class lauriceTimerPanel extends JPanel {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             boolean active = isSelected();
-            int arc = getHeight();
-            int inset = 3;
+            // Draw the full control ourselves so both session modes retain a
+            // continuous, symmetric outline on every look and feel.
+            int inset = 1;
+            int arc = getHeight() - inset * 2;
             if (active) {
                 g2.setColor(CREAM);
                 g2.fillRoundRect(inset, inset, getWidth() - inset * 2,
                         getHeight() - inset * 2, arc, arc);
             } else {
                 g2.setColor(CREAM);
-                g2.setStroke(new BasicStroke(2.5f));
+                g2.setStroke(new BasicStroke(2f));
                 g2.drawRoundRect(inset, inset, getWidth() - inset * 2,
                         getHeight() - inset * 2, arc, arc);
             }
