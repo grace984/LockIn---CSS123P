@@ -2,7 +2,9 @@ package lockin;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 
 public class ramiraTrackerPanel extends JPanel {
@@ -13,6 +15,46 @@ public class ramiraTrackerPanel extends JPanel {
     private static final Color BAR_BG = new Color(0xC9B496);
     private static final Color TEXT = new Color(0x5C3A12);
     private static final Color TITLE = new Color(0x4A0F2A);
+
+    // fonts: Newsreader 36pt for headers, Times New Roman for everything else
+    private static final Font HEADER_FONT = loadHeaderFont();
+
+    private static Font loadHeaderFont() {
+        String name = "Newsreader_36pt-Regular.ttf";
+        ArrayList<File> candidates = new ArrayList<>();
+        candidates.add(new File("fonts/" + name));
+        candidates.add(new File("../fonts/" + name));
+        try {
+            // .../LockIn/out  ->  .../LockIn/fonts
+            File codeLocation = new File(
+                    ramiraTrackerPanel.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            candidates.add(new File(codeLocation.getParentFile(), "fonts/" + name));
+        } catch (Exception e) {
+            // ignore, the other paths may still work
+        }
+
+        for (File f : candidates) {
+            if (f.exists()) {
+                try {
+                    Font font = Font.createFont(Font.TRUETYPE_FONT, f);
+                    GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+                    return font;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        System.out.println("Newsreader font file not found. Looked in: " + candidates);
+        return new Font("Newsreader 36pt", Font.PLAIN, 12); // works if installed on the computer
+    }
+
+    private static Font header(float size) {
+        return HEADER_FONT.deriveFont(Font.PLAIN, size);
+    }
+
+    private static Font body(int style, int size) {
+        return new Font("Times New Roman", style, size);
+    }
 
     private ArrayList<String> restrictedSites = new ArrayList<>();
     private ArrayList<String> trackedSites = new ArrayList<>();
@@ -25,18 +67,18 @@ public class ramiraTrackerPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // title
+        // title (Newsreader)
         JLabel title = new JLabel("Distraction sites:");
-        title.setFont(new Font("Serif", Font.PLAIN, 24));
+        title.setFont(header(28));
         title.setForeground(TITLE);
         title.setAlignmentX(CENTER_ALIGNMENT);
         add(title);
         add(Box.createVerticalStrut(8));
 
-        // description
-        JLabel desc = new JLabel("<html><div style='width:260px'>Add website links distracting you "
+        // description (Times New Roman)
+        JLabel desc = new JLabel("<html><div style='width:320px'>Add website links distracting you "
                 + "from work. LockIn will warn you off the sites and keep you productive.</div></html>");
-        desc.setFont(new Font("Serif", Font.PLAIN, 15));
+        desc.setFont(body(Font.PLAIN, 15));
         desc.setForeground(TITLE);
         desc.setAlignmentX(CENTER_ALIGNMENT);
         add(desc);
@@ -50,12 +92,16 @@ public class ramiraTrackerPanel extends JPanel {
         add(buildListBox(listPanel));
         add(Box.createVerticalStrut(16));
 
-        // tracked sites
+        // "Tracked sites:" label, aligned to the left
         JLabel trackedLabel = new JLabel("Tracked sites:");
-        trackedLabel.setFont(new Font("Serif", Font.PLAIN, 15));
+        trackedLabel.setFont(body(Font.PLAIN, 15));
         trackedLabel.setForeground(TITLE);
-        trackedLabel.setAlignmentX(CENTER_ALIGNMENT);
-        add(trackedLabel);
+        JPanel trackedRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        trackedRow.setOpaque(false);
+        trackedRow.add(trackedLabel);
+        trackedRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
+        trackedRow.setAlignmentX(CENTER_ALIGNMENT);
+        add(trackedRow);
         add(Box.createVerticalStrut(6));
         add(buildListBox(trackedPanel));
         add(Box.createVerticalGlue());
@@ -72,7 +118,7 @@ public class ramiraTrackerPanel extends JPanel {
         bar.setAlignmentX(CENTER_ALIGNMENT);
 
         JButton plus = iconButton(new PlusIcon());
-                plus.addActionListener(e -> {
+        plus.addActionListener(e -> {
             if (input.getText().trim().isEmpty()) {
                 input.requestFocusInWindow(); // nothing typed yet: just focus the box
             } else {
@@ -99,14 +145,14 @@ public class ramiraTrackerPanel extends JPanel {
         };
         input.setOpaque(false);
         input.setBorder(new EmptyBorder(0, 4, 0, 4));
-        input.setFont(new Font("Serif", Font.BOLD, 16));
+        input.setFont(body(Font.BOLD, 16));
         input.setForeground(TEXT);
         input.setCaretColor(TEXT);
         input.addActionListener(e -> addSite(input.getText())); // Enter key
 
         bar.add(plus, BorderLayout.WEST);
         bar.add(input, BorderLayout.CENTER);
-                bar.addMouseListener(new java.awt.event.MouseAdapter() {
+        bar.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent e) {
                 input.requestFocusInWindow(); // clicking the bar focuses the text box
@@ -115,7 +161,7 @@ public class ramiraTrackerPanel extends JPanel {
         return bar;
     }
 
-    // a rounded tan box with a scrollable list inside
+    // a rounded tan box with a scrollable list and a slim scrollbar
     private JPanel buildListBox(JPanel list) {
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setOpaque(false);
@@ -128,11 +174,18 @@ public class ramiraTrackerPanel extends JPanel {
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
         scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(12);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        JScrollBar vbar = scroll.getVerticalScrollBar();
+        vbar.setUI(new SlimScrollBarUI());
+        vbar.setPreferredSize(new Dimension(10, 0));
+        vbar.setOpaque(false);
+        vbar.setUnitIncrement(12);
 
         RoundedPanel box = new RoundedPanel(BOX_BG, 14);
         box.setLayout(new BorderLayout());
-        box.setBorder(new EmptyBorder(8, 10, 8, 6));
+        box.setBorder(new EmptyBorder(8, 10, 8, 8));
         box.setPreferredSize(new Dimension(300, 150));
         box.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
         box.setAlignmentX(CENTER_ALIGNMENT);
@@ -156,7 +209,7 @@ public class ramiraTrackerPanel extends JPanel {
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
 
         JLabel label = new JLabel("\u2022  " + site); // bullet + site
-        label.setFont(new Font("Serif", Font.PLAIN, 15));
+        label.setFont(body(Font.PLAIN, 15));
         label.setForeground(Color.BLACK);
         row.add(label, BorderLayout.CENTER);
 
@@ -253,6 +306,48 @@ public class ramiraTrackerPanel extends JPanel {
         }
     }
 
+    // slim rounded scrollbar like the design: darker track, lighter thumb, no arrow buttons
+    private static class SlimScrollBarUI extends BasicScrollBarUI {
+        private static final Color THUMB = new Color(0xEADFCB);
+
+        @Override
+        protected JButton createDecreaseButton(int orientation) {
+            return emptyButton();
+        }
+
+        @Override
+        protected JButton createIncreaseButton(int orientation) {
+            return emptyButton();
+        }
+
+        private JButton emptyButton() {
+            JButton b = new JButton();
+            Dimension zero = new Dimension(0, 0);
+            b.setPreferredSize(zero);
+            b.setMinimumSize(zero);
+            b.setMaximumSize(zero);
+            return b;
+        }
+
+        @Override
+        public void paint(Graphics g, JComponent c) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            Rectangle track = getTrackBounds();
+            g2.setColor(BAR_BG);
+            g2.fillRoundRect(track.x, track.y, track.width, track.height, track.width, track.width);
+
+            // when there's nothing to scroll yet, still show a thumb like the design
+            Rectangle thumb = getThumbBounds();
+            int y = thumb.height > 0 ? thumb.y : track.y;
+            int h = thumb.height > 0 ? thumb.height : track.height / 3;
+            g2.setColor(THUMB);
+            g2.fillRoundRect(track.x, y, track.width, h, track.width, track.width);
+            g2.dispose();
+        }
+    }
+
     private static class PlusIcon implements Icon {
         public int getIconWidth() { return 22; }
         public int getIconHeight() { return 22; }
@@ -292,8 +387,8 @@ public class ramiraTrackerPanel extends JPanel {
     public static void main(String[] args) {
         JFrame f = new JFrame("Tracker test");
         f.add(new ramiraTrackerPanel());
-        f.setSize(360, 560);
+        f.setSize(420, 600);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setVisible(true);
     }
-}
+}  
