@@ -46,10 +46,9 @@ public class MainFrame extends JFrame {
 
         // TODO (Laurice's panel): replace this label with  timerArea.add(new lauriceTimerPanel(), BorderLayout.CENTER);
         // her panel must call setOpaque(false) so the gradient shows through
-        JLabel timerPlaceholder = new JLabel("25:00", SwingConstants.CENTER);
-        timerPlaceholder.setFont(new Font("Serif", Font.BOLD, 96));
-        timerPlaceholder.setForeground(CREAM);
-        timerArea.add(timerPlaceholder, BorderLayout.CENTER);
+        lauriceTimerPanel timerPanel = new lauriceTimerPanel();
+        timerPanel.setOpaque(false);
+        timerArea.add(timerPanel, BorderLayout.CENTER);
 
         add(timerArea, BorderLayout.CENTER);
 
