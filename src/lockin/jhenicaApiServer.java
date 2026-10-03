@@ -46,10 +46,7 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
-    // /website
-    // Receives the website currently opened in Chrome
-    // =========================================================
+
 
     private void handleWebsite(
             HttpExchange exchange
@@ -121,10 +118,7 @@ public class jhenicaApiServer {
         exchange.close();
     }
 
-    // =========================================================
-    // /restricted
-    // Sends the websites added by the USER in LockIn
-    // =========================================================
+
 
     private void handleRestricted(
             HttpExchange exchange
@@ -187,9 +181,7 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
-    // CORS
-    // =========================================================
+
 
     private void addCorsHeaders(
             HttpExchange exchange
@@ -211,9 +203,7 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
-    // Send response
-    // =========================================================
+
 
     private void sendResponse(
             HttpExchange exchange,
@@ -237,9 +227,7 @@ public class jhenicaApiServer {
         }
     }
 
-    // =========================================================
-    // JSON escaping
-    // =========================================================
+
 
     private String escapeJson(
             String text
