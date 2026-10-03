@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "LockIn Website Blocker",
+  "version": "1.0",
+  "description": "Blocks restricted websites during work sessions.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    ""
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
