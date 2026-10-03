@@ -6,6 +6,7 @@ import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ramiraTrackerPanel extends JPanel {
 
@@ -56,10 +57,12 @@ public class ramiraTrackerPanel extends JPanel {
         return new Font("Times New Roman", style, size);
     }
 
-    private ArrayList<String> restrictedSites = new ArrayList<>();
-    private ArrayList<String> trackedSites = new ArrayList<>();
-    private JPanel listPanel = new JPanel();
-    private JPanel trackedPanel = new JPanel();
+    // restrictedSites is read by Jhenica's server (another thread) while the UI edits it,
+    // so it uses a thread-safe list. trackedSites is only touched on the UI thread.
+    private final CopyOnWriteArrayList<String> restrictedSites = new CopyOnWriteArrayList<>();
+    private final ArrayList<String> trackedSites = new ArrayList<>();
+    private final JPanel listPanel = new JPanel();
+    private final JPanel trackedPanel = new JPanel();
     private JTextField input;
 
     public ramiraTrackerPanel() {
@@ -76,7 +79,7 @@ public class ramiraTrackerPanel extends JPanel {
         add(Box.createVerticalStrut(8));
 
         // description (Times New Roman)
-        JLabel desc = new JLabel("<html><div style='width:320px'>Add website links distracting you "
+        JLabel desc = new JLabel("<html><div style='width:280px'>Add website links distracting you "
                 + "from work. LockIn will warn you off the sites and keep you productive.</div></html>");
         desc.setFont(body(Font.PLAIN, 15));
         desc.setForeground(TITLE);
@@ -262,7 +265,7 @@ public class ramiraTrackerPanel extends JPanel {
         trackedPanel.repaint();
     }
 
-    // Jhenica's server and the warning will call this
+    // Jhenica's server and the warning call this.
     // youtube.com is restricted -> m.youtube.com is too
     public boolean isRestricted(String site) {
         String host = clean(site);
@@ -274,20 +277,23 @@ public class ramiraTrackerPanel extends JPanel {
         return false;
     }
 
-    // Call this when a restricted site is caught during Work, so it shows under "Tracked sites"
+    // Call this when a restricted site is caught during Work, so it shows under "Tracked sites".
+    // Safe to call from another thread (like the server): the screen update runs on the UI thread.
     public void logTrackedSite(String site) {
-        site = clean(site);
-        if (!trackedSites.contains(site)) {
-            trackedSites.add(site);
-            refreshLists();
-        }
+        final String cleaned = clean(site);
+        SwingUtilities.invokeLater(() -> {
+            if (!cleaned.isEmpty() && !trackedSites.contains(cleaned)) {
+                trackedSites.add(cleaned);
+                refreshLists();
+            }
+        });
     }
 
     // ---------- small drawing helpers ----------
 
     private static class RoundedPanel extends JPanel {
-        private Color color;
-        private int radius;
+        private final Color color;
+        private final int radius;
 
         RoundedPanel(Color color, int radius) {
             this.color = color;
@@ -382,13 +388,4 @@ public class ramiraTrackerPanel extends JPanel {
             g2.dispose();
         }
     }
-
-    // TEST ONLY: delete this method before the final push
-    public static void main(String[] args) {
-        JFrame f = new JFrame("Tracker test");
-        f.add(new ramiraTrackerPanel());
-        f.setSize(420, 600);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setVisible(true);
-    }
-}  
+}
