@@ -52,6 +52,8 @@ public class julianneThemePanel extends JPanel
 
     private float checkmarkProgress = 1.0f;
 
+    private long checkmarkStartedAt;
+
     private final Timer checkmarkTimer;
 
     // =========================================================
@@ -199,11 +201,25 @@ public class julianneThemePanel extends JPanel
                         16,
                         e -> {
 
-                            checkmarkProgress +=
-                                    0.10f;
+                            float rawProgress =
+                                    Math.min(
+                                            1.0f,
+                                            (System.nanoTime()
+                                                    - checkmarkStartedAt)
+                                                    / 200_000_000.0f
+                                    );
+
+                            checkmarkProgress =
+                                    rawProgress
+                                            * rawProgress
+                                            * (
+                                                    3.0f
+                                                    - 2.0f
+                                                    * rawProgress
+                                            );
 
                             if (
-                                    checkmarkProgress >=
+                                    rawProgress >=
                                     1.0f
                             ) {
 
@@ -295,6 +311,9 @@ public class julianneThemePanel extends JPanel
 
         checkmarkProgress =
                 0.0f;
+
+        checkmarkStartedAt =
+                System.nanoTime();
 
         if (
                 !checkmarkTimer.isRunning()
@@ -590,6 +609,12 @@ public class julianneThemePanel extends JPanel
                     circle
             );
 
+            if (hoverProgress > 0.0f) {
+                g2.setColor(new Color(255, 255, 255,
+                        (int) (18 * hoverProgress)));
+                g2.fill(circle);
+            }
+
             // -------------------------------------------------
             // HOVER BORDER
             // -------------------------------------------------
@@ -690,9 +715,9 @@ public class julianneThemePanel extends JPanel
                 int y3 =
                         startY;
 
-                g2.setColor(
-                        WHITE
-                );
+                g2.setComposite(AlphaComposite.getInstance(
+                        AlphaComposite.SRC_OVER, scale));
+                g2.setColor(WHITE);
 
                 g2.setStroke(
                         new BasicStroke(

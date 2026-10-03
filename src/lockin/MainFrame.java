@@ -24,6 +24,10 @@ public class MainFrame extends JFrame {
     private JPanel drawer = new JPanel(new BorderLayout());
     private Map<String, JButton> tabButtons = new LinkedHashMap<>();
     private GradientPanel timerArea;
+    private static final int DRAWER_WIDTH = 709;
+    private int displayedDrawerWidth = DRAWER_WIDTH;
+    private boolean drawerOpen = true;
+    private AnimationUtils.Animation drawerAnimation;
 
     public MainFrame() {
         setTitle("LockIn");
@@ -89,7 +93,7 @@ public class MainFrame extends JFrame {
 
         JPanel tabsGrid = new JPanel(new GridLayout(4, 1));
         tabsGrid.setOpaque(false);
-        tabsGrid.setPreferredSize(new Dimension(276, 330));
+        tabsGrid.setPreferredSize(new Dimension(238, 330));
 
         addTab(
                 tabsGrid,
@@ -137,7 +141,7 @@ public class MainFrame extends JFrame {
             public void doLayout() {
                 tabsHolder.setBounds(0, 0, 238, getHeight());
                 contentPanel.setBounds(238, 0, 471, getHeight());
-                tabsGrid.setBounds(0, 0, 276, 330);
+                tabsGrid.setBounds(0, 0, 238, 330);
             }
         };
         columns.setOpaque(false);
@@ -149,7 +153,7 @@ public class MainFrame extends JFrame {
         columns.setComponentZOrder(contentPanel, 1);
         columns.setComponentZOrder(tabsHolder, 2);
 
-        drawer.setPreferredSize(new Dimension(709, 810));
+        drawer.setPreferredSize(new Dimension(DRAWER_WIDTH, 810));
         drawer.add(columns, BorderLayout.CENTER);
         drawer.setVisible(true);
 
@@ -168,13 +172,20 @@ public class MainFrame extends JFrame {
     // ---------- helpers ----------
 
     private void toggleDrawer() {
-
-        drawer.setVisible(
-                !drawer.isVisible()
-        );
-
-        getContentPane().revalidate();
-        getContentPane().repaint();
+        drawerOpen = !drawerOpen;
+        int start = displayedDrawerWidth;
+        int target = drawerOpen ? DRAWER_WIDTH : 0;
+        if (drawerAnimation != null) {
+            drawerAnimation.stop();
+        }
+        drawerAnimation = AnimationUtils.animate(300, AnimationUtils::easeInOut,
+                progress -> {
+                    displayedDrawerWidth = (int) Math.round(
+                            AnimationUtils.interpolate(start, target, progress));
+                    drawer.setPreferredSize(new Dimension(displayedDrawerWidth, 810));
+                    getContentPane().revalidate();
+                    getContentPane().repaint();
+                }, null);
     }
 
     private void addTab(
@@ -209,7 +220,7 @@ public class MainFrame extends JFrame {
         b.setBorderPainted(false);
         b.setContentAreaFilled(false);
         b.setOpaque(false);
-        b.setPreferredSize(new Dimension(276, 82));
+        b.setPreferredSize(new Dimension(238, 82));
 
         b.setCursor(
                 Cursor.getPredefinedCursor(
@@ -247,17 +258,24 @@ public class MainFrame extends JFrame {
     }
 
     private JPanel createTimePanel(lauriceTimerPanel timerPanel) {
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(PANEL_BG);
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(new EmptyBorder(30, 38, 20, 38));
-        panel.add(Box.createVerticalGlue());
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.weightx = 1.0;
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.insets = new Insets(0, 0, 28, 0);
+        constraints.gridy = 0;
+        constraints.weighty = 1.0;
+        constraints.anchor = GridBagConstraints.SOUTH;
         panel.add(createDurationEditor("Work", timerPanel.getWorkDuration(),
-                timerPanel::setWorkDuration));
-        panel.add(Box.createVerticalStrut(28));
+                timerPanel::setWorkDuration), constraints);
+        constraints.gridy = 1;
+        constraints.weighty = 1.0;
+        constraints.insets = new Insets(28, 0, 0, 0);
+        constraints.anchor = GridBagConstraints.NORTH;
         panel.add(createDurationEditor("Break", timerPanel.getBreakDuration(),
-                timerPanel::setBreakDuration));
-        panel.add(Box.createVerticalGlue());
+                timerPanel::setBreakDuration), constraints);
         return panel;
     }
 
@@ -266,6 +284,9 @@ public class MainFrame extends JFrame {
         JPanel section = new JPanel();
         section.setOpaque(false);
         section.setLayout(new BoxLayout(section, BoxLayout.Y_AXIS));
+        section.setPreferredSize(new Dimension(360, 220));
+        section.setMinimumSize(new Dimension(360, 220));
+        section.setMaximumSize(new Dimension(360, 220));
 
         JLabel heading = new JLabel(title);
         heading.setFont(new Font("Times New Roman", Font.PLAIN, 32));
@@ -290,6 +311,8 @@ public class MainFrame extends JFrame {
 
         JPanel row = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
         row.setOpaque(false);
+        row.setAlignmentX(Component.CENTER_ALIGNMENT);
+        row.setMaximumSize(new Dimension(360, 74));
         row.add(minus);
         row.add(value);
         row.add(plus);
@@ -455,6 +478,10 @@ public class MainFrame extends JFrame {
 
     private static class TabButton extends JButton {
         private boolean selected;
+        private static final double INACTIVE_WIDTH = 200.0;
+        private static final double ACTIVE_WIDTH = 238.0;
+        private double displayedWidth = INACTIVE_WIDTH;
+        private AnimationUtils.Animation widthAnimation;
 
         TabButton(String label) {
             super(label);
@@ -463,9 +490,20 @@ public class MainFrame extends JFrame {
         }
 
         void setTabSelected(boolean selected) {
+            if (this.selected == selected) {
+                return;
+            }
             this.selected = selected;
-            setForeground(selected ? MAROON : MAROON);
-            repaint();
+            double start = displayedWidth;
+            double target = selected ? ACTIVE_WIDTH : INACTIVE_WIDTH;
+            if (widthAnimation != null) {
+                widthAnimation.stop();
+            }
+            widthAnimation = AnimationUtils.animate(240, AnimationUtils::easeInOut,
+                    progress -> {
+                        displayedWidth = AnimationUtils.interpolate(start, target, progress);
+                        repaint();
+                    }, null);
         }
 
         @Override
@@ -474,15 +512,15 @@ public class MainFrame extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
-            int width = selected ? getWidth() : 238;
-            int height = getHeight() - 1;
-            int radius = Math.min(18, height / 3);
+            int width = Math.min(getWidth(), (int) Math.round(displayedWidth));
+            int height = getHeight() - 2;
+            int radius = Math.min(34, height / 2);
             Path2D shape = new Path2D.Float();
-            shape.moveTo(0, 0);
-            shape.lineTo(width - radius, 0);
-            shape.quadTo(width, 0, width, radius);
-            shape.lineTo(width, height - radius);
-            shape.quadTo(width, height, width - radius, height);
+            shape.moveTo(0, 1);
+            shape.lineTo(width - radius, 1);
+            shape.quadTo(width - 1, 1, width - 1, radius);
+            shape.lineTo(width - 1, height - radius);
+            shape.quadTo(width - 1, height, width - radius, height);
             shape.lineTo(0, height);
             shape.closePath();
 
@@ -569,6 +607,7 @@ public class MainFrame extends JFrame {
 
         private Color top;
         private Color bottom;
+        private AnimationUtils.Animation colorAnimation;
 
         GradientPanel(
                 Color top,
@@ -583,11 +622,17 @@ public class MainFrame extends JFrame {
                 Color top,
                 Color bottom
         ) {
-
-            this.top = top;
-            this.bottom = bottom;
-
-            repaint();
+            Color startTop = this.top;
+            Color startBottom = this.bottom;
+            if (colorAnimation != null) {
+                colorAnimation.stop();
+            }
+            colorAnimation = AnimationUtils.animate(280, AnimationUtils::easeInOut,
+                    progress -> {
+                        this.top = AnimationUtils.interpolate(startTop, top, progress);
+                        this.bottom = AnimationUtils.interpolate(startBottom, bottom, progress);
+                        repaint();
+                    }, null);
         }
 
         @Override

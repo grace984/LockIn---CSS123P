@@ -230,13 +230,16 @@ public class lauriceTimerPanel extends JPanel {
                     RenderingHints.VALUE_ANTIALIAS_ON);
             boolean active = isSelected();
             int arc = getHeight();
+            int inset = 3;
             if (active) {
                 g2.setColor(CREAM);
-                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, arc, arc);
+                g2.fillRoundRect(inset, inset, getWidth() - inset * 2,
+                        getHeight() - inset * 2, arc, arc);
             } else {
                 g2.setColor(CREAM);
-                g2.setStroke(new BasicStroke(3f));
-                g2.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, arc, arc);
+                g2.setStroke(new BasicStroke(2.5f));
+                g2.drawRoundRect(inset, inset, getWidth() - inset * 2,
+                        getHeight() - inset * 2, arc, arc);
             }
             g2.setFont(getFont());
             g2.setColor(active ? BROWN : CREAM);
