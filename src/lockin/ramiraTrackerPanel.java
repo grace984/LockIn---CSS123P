@@ -22,26 +22,26 @@ public class ramiraTrackerPanel extends JPanel {
 
 
     // colors taken from the UI design
-    private static final Color PANEL_BG = new Color(0xF7E9DF);  // same as the Themes panel
-    private static final Color BOX_BG = new Color(0xFFFAF5);    // soft cream cards
-    private static final Color BAR_BG = new Color(0xEBD3C5);    // card outlines / scrollbar track
-    private static final Color TEXT = new Color(0x8A4A5E);      // muted rose-brown
-    private static final Color TITLE = new Color(0x59132C);     // maroon (same as Themes panel)
+    private static final Color PANEL_BG = new Color(0xF2E6DC);  // same as the other tabs
+    private static final Color BOX_BG = new Color(0xE0CEB3);    // tan cards
+    private static final Color BAR_BG = new Color(0xC9B496);    // card outlines / scrollbar track
+    private static final Color TEXT = new Color(0x5C3A12);      // warm brown text
+    private static final Color TITLE = new Color(0x4A0F2A);     // maroon title
 
 
     // accents taken from theme 1 (maroon -> raspberry -> rose)
-    private static final Color ACCENT = new Color(0xA42762);
-    private static final Color ROSE = new Color(0xD17D93);
+    private static final Color ACCENT = new Color(0x4A0F2A);
+    private static final Color ROSE = new Color(0xB89A6B);
 
 
     // extra colors for the polished look
     private static final Color FIELD_BG = new Color(0xFFFDFA);
     private static final Color CREAM = new Color(0xFFF6EE);
-    private static final Color ROW_HOVER = new Color(0xFBE9E4);
-    private static final Color CORAL = new Color(0xE16A54);
+    private static final Color ROW_HOVER = new Color(0xEBDFC9);
+    private static final Color CORAL = new Color(0x9C6B3C);
     private static final Color DANGER = new Color(0xC0392B);
-    private static final Color MUTED = new Color(0x59, 0x13, 0x2C, 130);
-    private static final Color ROW_TEXT = new Color(0x3A1523);
+    private static final Color MUTED = new Color(0x4A, 0x0F, 0x2A, 130);
+    private static final Color ROW_TEXT = new Color(0x2B1A14);
 
 
     // width of the centered content column
