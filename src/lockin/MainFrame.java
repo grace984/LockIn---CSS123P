@@ -933,16 +933,13 @@ public class MainFrame extends JFrame {
         );
 
 
-        JPanel warningSettings =
-                settingsGroup(
-                        "Tracker Warning Message",
-                        new String[]{
-                                "Version 1",
-                                "Version 2",
-                                "Version 3"
-                        },
-                        0
-                );
+JPanel warningSettings =
+        settingsGroup(
+                "Tracker Warning Message",
+                ramiraTrackerPanel.getWarningMessages(),   // was new String[]{"Version 1", ...}
+                ramiraTrackerPanel.getWarningVersion(),
+                ramiraTrackerPanel::setWarningVersion
+        );
 
 
         warningSettings.setBounds(
@@ -1057,12 +1054,17 @@ public class MainFrame extends JFrame {
     }
 
 
+    // old 3-argument version still works (radios just don't save anything)
+    private JPanel settingsGroup(String label, String[] values, int selectedIndex) {
+        return settingsGroup(label, values, selectedIndex, i -> { });
+    }
+
     private JPanel settingsGroup(
             String label,
             String[] values,
-            int selectedIndex
+            int selectedIndex,
+            java.util.function.IntConsumer onPick
     ) {
-
         JPanel section =
                 new JPanel(null);
 
@@ -1186,6 +1188,8 @@ public class MainFrame extends JFrame {
                     )
             );
 
+            final int index = i;
+            option.addActionListener(e -> onPick.accept(index));
 
             group.add(option);
 

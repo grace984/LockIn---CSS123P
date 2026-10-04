@@ -62,6 +62,14 @@ public class jhenicaApiServer {
                 this::handleTimer
         );
 
+        /*
+         * Chrome gets the warning message chosen in Settings here.
+         */
+        server.createContext(
+                "/message",
+                this::handleMessage
+        );
+
         server.setExecutor(null);
 
         server.start();
@@ -360,6 +368,63 @@ public class jhenicaApiServer {
         sendResponse(
                 exchange,
                 response
+        );
+    }
+
+    /*
+     * =========================================================
+     * WARNING MESSAGE ENDPOINT
+     * =========================================================
+     *
+     * Chrome can call:
+     *
+     * http://localhost:8080/message
+     *
+     * It returns the warning message the user picked
+     * in Settings, as plain text.
+     */
+
+    private void handleMessage(
+            HttpExchange exchange
+    ) throws IOException {
+
+        addCorsHeaders(exchange);
+
+        if (
+                "OPTIONS".equalsIgnoreCase(
+                        exchange.getRequestMethod()
+                )
+        ) {
+
+            exchange.sendResponseHeaders(
+                    204,
+                    -1
+            );
+
+            exchange.close();
+
+            return;
+        }
+
+        if (
+                !"GET".equalsIgnoreCase(
+                        exchange.getRequestMethod()
+                )
+        ) {
+
+            exchange.sendResponseHeaders(
+                    405,
+                    -1
+            );
+
+            exchange.close();
+
+            return;
+        }
+
+        sendResponse(
+                exchange,
+                ramiraTrackerPanel.getWarningMessage()
         );
     }
 
