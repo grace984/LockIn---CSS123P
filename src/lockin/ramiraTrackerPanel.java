@@ -8,6 +8,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.prefs.Preferences;
 
 public class ramiraTrackerPanel extends JPanel {
 
@@ -80,13 +81,48 @@ public class ramiraTrackerPanel extends JPanel {
         );
     }
 
-    private static Font header(float size) {
+    public static Font header(float size) {
         return HEADER_FONT.deriveFont(Font.PLAIN, size);
     }
 
-    private static Font body(int style, int size) {
+    public static Font body(int style, int size) {
         return new Font("Times New Roman", style, size);
     }
+        // ---------- warning message (picked in Settings) ----------
+
+    private static final String[] WARNING_MESSAGES = {
+        "This website is on your distraction list.",   // Version 1
+        "Go back to work!",                            // Version 2
+        "Eyes on the task!"                            // Version 3
+    };
+
+    private static final Preferences PREFS =
+            Preferences.userNodeForPackage(ramiraTrackerPanel.class);
+
+    // 0 = Version 1, 1 = Version 2, 2 = Version 3 (loaded from the saved choice)
+    private static volatile int warningVersion =
+            clampVersion(PREFS.getInt("warningVersion", 0));
+
+    private static int clampVersion(int v) {
+        return Math.max(0, Math.min(v, WARNING_MESSAGES.length - 1));
+    }
+
+    public static int getWarningVersion() {
+        return warningVersion;
+    }
+
+    public static void setWarningVersion(int version) {
+        warningVersion = clampVersion(version);
+        PREFS.putInt("warningVersion", warningVersion); // saved, survives closing the app
+    }
+
+    public static String getWarningMessage() {
+        return WARNING_MESSAGES[warningVersion];
+    }
+
+    public static String[] getWarningMessages() {
+    return WARNING_MESSAGES.clone();
+}
 
     // restrictedSites is read by Jhenica's server
     // while the UI edits it, so it uses a thread-safe list.
@@ -652,20 +688,19 @@ public class ramiraTrackerPanel extends JPanel {
     // =========================================================
     public void showWarning(String site) {
 
+        final String message = getWarningMessage();
+
         SwingUtilities.invokeLater(() -> {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "This website is on your distraction list:\n\n"
-                            + clean(site)
-                            + "\n\nPlease return to your work.",
+                    message + "\n\n" + clean(site),
                     "LockIn Warning",
                     JOptionPane.WARNING_MESSAGE
             );
 
         });
     }
-
     // ---------- small drawing helpers ----------
 
     private static class RoundedPanel

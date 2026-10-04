@@ -1,170 +1,138 @@
-let warningVisible = false;
-let timerWasActive = false;
+const DEFAULT_MESSAGE = "This website is on your distraction list.";
+const CHECK_INTERVAL_MS = 2000;
+
+let checkTimer = null;
 
 
-function checkLockInStatus() {
+/* ---------------------------------------------------------
+   SAFE MESSAGING
+   If the extension is reloaded while a page is open, the old
+   content script can no longer talk to it. This helper stops
+   the polling instead of throwing errors forever.
+--------------------------------------------------------- */
+function askBackground(message, callback) {
 
-    chrome.runtime.sendMessage(
-        {
-            action: "getTimerStatus"
-        },
-        function (timerStatus) {
+    try {
+
+        chrome.runtime.sendMessage(message, function (reply) {
 
             if (chrome.runtime.lastError) {
-
                 console.log(
-                    "LockIn timer error:",
+                    "LockIn error (" + message.action + "):",
                     chrome.runtime.lastError.message
                 );
-
+                callback(undefined);
                 return;
             }
 
+            callback(reply);
+        });
 
-            // WORK TIMER IS NOT RUNNING
-            if (
-                !timerStatus ||
-                timerStatus.active !== true ||
-                timerStatus.mode !== "work"
-            ) {
+    } catch (error) {
 
-                timerWasActive = false;
+        console.log("LockIn: extension reloaded, stopping checks.");
 
-                removeWarning();
-
-                return;
-            }
-
-
-            // WORK TIMER IS RUNNING
-            timerWasActive = true;
-
-            checkRestrictedSite();
-
+        if (checkTimer) {
+            clearInterval(checkTimer);
         }
-    );
+    }
 }
 
 
+/* ---------------------------------------------------------
+   STEP 1: IS THE WORK TIMER RUNNING?
+--------------------------------------------------------- */
+function checkLockInStatus() {
+
+    askBackground({ action: "getTimerStatus" }, function (timerStatus) {
+
+        if (
+            !timerStatus ||
+            timerStatus.active !== true ||
+            timerStatus.mode !== "work"
+        ) {
+            removeWarning();
+            return;
+        }
+
+        checkRestrictedSite();
+    });
+}
+
+
+/* ---------------------------------------------------------
+   STEP 2: IS THIS SITE ON THE DISTRACTION LIST?
+--------------------------------------------------------- */
 function checkRestrictedSite() {
 
-    chrome.runtime.sendMessage(
-        {
-            action: "getRestrictedSites"
-        },
-        function (restrictedSites) {
+    askBackground({ action: "getRestrictedSites" }, function (restrictedSites) {
 
-            if (chrome.runtime.lastError) {
+        if (!Array.isArray(restrictedSites)) {
+            return;
+        }
 
-                console.log(
-                    "LockIn restricted sites error:",
-                    chrome.runtime.lastError.message
-                );
+        const currentHostname =
+            window.location.hostname
+                .toLowerCase()
+                .replace(/^www\./, "");
 
-                return;
-            }
+        if (!currentHostname) {
+            return;
+        }
 
+        const isRestricted = restrictedSites.some(function (site) {
 
-            if (!restrictedSites) {
-                return;
-            }
-
-
-            const currentHostname =
-                window.location.hostname
+            const cleanSite =
+                String(site)
                     .toLowerCase()
                     .replace(/^www\./, "");
 
+            return (
+                currentHostname === cleanSite ||
+                currentHostname.endsWith("." + cleanSite)
+            );
+        });
 
-            if (!currentHostname) {
-                return;
-            }
-
-
-            const isRestricted =
-                restrictedSites.some(function (site) {
-
-                    const cleanSite =
-                        String(site)
-                            .toLowerCase()
-                            .replace(/^www\./, "");
-
-                    return (
-                        currentHostname === cleanSite ||
-                        currentHostname.endsWith(
-                            "." + cleanSite
-                        )
-                    );
-
-                });
-
-
-            // WEBSITE IS NOT ON DISTRACTION LIST
-            if (!isRestricted) {
-
-                removeWarning();
-
-                return;
-            }
-
-
-            // WEBSITE IS RESTRICTED
-            showWarning(currentHostname);
-
+        if (!isRestricted) {
+            removeWarning();
+            return;
         }
-    );
+
+        showWarning(currentHostname);
+    });
 }
 
 
+/* ---------------------------------------------------------
+   STEP 3: SHOW THE WARNING (OR REFRESH IT IF ALREADY SHOWN)
+--------------------------------------------------------- */
 function showWarning(currentHostname) {
 
-    if (
-        document.getElementById(
-            "lockin-warning"
-        )
-    ) {
+    // Warning is already on screen: only refresh the message text,
+    // so a newly selected Version 1/2/3 shows up without a reload.
+    if (document.getElementById("lockin-warning")) {
+        updateWarningMessage();
         return;
     }
 
-
-    const overlay =
-        document.createElement("div");
-
-    overlay.id =
-        "lockin-warning";
-
+    const overlay = document.createElement("div");
+    overlay.id = "lockin-warning";
 
     overlay.innerHTML = `
         <div id="lockin-warning-box">
-
-            <div class="lockin-title">
-                LockIn Warning
-            </div>
-
-            <div class="lockin-message">
-                This website is on your
-                distraction list.
-            </div>
-
-            <div class="lockin-site">
-                ${currentHostname}
-            </div>
-
-            <button id="lockin-close">
-                Continue
-            </button>
-
+            <div class="lockin-title">LockIn Warning</div>
+            <div class="lockin-message"></div>
+            <div class="lockin-site"></div>
+            <button id="lockin-close">Continue</button>
         </div>
     `;
 
+    // Set as text (not innerHTML) so nothing in the values can inject HTML.
+    overlay.querySelector(".lockin-message").textContent = DEFAULT_MESSAGE;
+    overlay.querySelector(".lockin-site").textContent = currentHostname;
 
-    const style =
-        document.createElement("style");
-
-
-    style.id =
-        "lockin-warning-style";
-
+    const style = document.createElement("style");
+    style.id = "lockin-warning-style";
 
     style.textContent = `
         #lockin-warning {
@@ -183,12 +151,12 @@ function showWarning(currentHostname) {
 
         #lockin-warning-box {
             background: white;
+            color: black;
             width: 360px;
             padding: 30px;
             border-radius: 15px;
             text-align: center;
-            box-shadow:
-                0 8px 30px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
         }
 
         .lockin-title {
@@ -222,70 +190,61 @@ function showWarning(currentHostname) {
         }
     `;
 
-
     document.head.appendChild(style);
+    document.documentElement.appendChild(overlay);
 
-    document.documentElement.appendChild(
-        overlay
-    );
+    overlay
+        .querySelector("#lockin-close")
+        .addEventListener("click", function () {
+            removeWarning();
+        });
 
-
-    const closeButton =
-        document.getElementById(
-            "lockin-close"
-        );
-
-
-    if (closeButton) {
-
-        closeButton.addEventListener(
-            "click",
-            function () {
-
-                overlay.remove();
-
-                style.remove();
-
-            }
-        );
-
-    }
-
+    updateWarningMessage();
 }
 
 
+/* ---------------------------------------------------------
+   ASK THE BACKGROUND SCRIPT FOR THE SELECTED MESSAGE
+   Expected reply: a plain string, e.g. "Stay focused!"
+--------------------------------------------------------- */
+function updateWarningMessage() {
+
+    askBackground({ action: "getWarningMessage" }, function (text) {
+
+        console.log("LockIn warning message reply:", text);
+
+        if (typeof text !== "string" || text.trim() === "") {
+            return;
+        }
+
+        const line = document.querySelector("#lockin-warning .lockin-message");
+
+        if (line && line.textContent !== text) {
+            line.textContent = text;
+        }
+    });
+}
+
+
+/* ---------------------------------------------------------
+   REMOVE THE WARNING
+--------------------------------------------------------- */
 function removeWarning() {
 
-    const overlay =
-        document.getElementById(
-            "lockin-warning"
-        );
+    const overlay = document.getElementById("lockin-warning");
 
     if (overlay) {
         overlay.remove();
     }
 
-
-    const style =
-        document.getElementById(
-            "lockin-warning-style"
-        );
+    const style = document.getElementById("lockin-warning-style");
 
     if (style) {
         style.remove();
     }
-
 }
 
 
-// CHECK IMMEDIATELY
+// CHECK IMMEDIATELY, THEN KEEP CHECKING
 checkLockInStatus();
-
-
-// KEEP CHECKING TIMER STATUS
-// This allows the website to react when
-// Work starts, pauses, or enters break.
-setInterval(
-    checkLockInStatus,
-    2000
-);
+checkTimer = setInterval(checkLockInStatus, CHECK_INTERVAL_MS);

@@ -152,5 +152,38 @@ chrome.runtime.onMessage.addListener(
             return true;
         }
 
+        // GET WARNING MESSAGE
+        if (
+            message.action ===
+            "getWarningMessage"
+        ) {
+
+            fetch(
+                "http://localhost:8080/message"
+            )
+            .then(response =>
+                response.text()
+            )
+            .then(text => {
+
+                sendResponse(text);
+
+            })
+            .catch(error => {
+
+                console.log(
+                    "LockIn warning message error:",
+                    error
+                );
+
+                sendResponse(
+                    "This website is on your distraction list."
+                );
+
+            });
+
+            return true;
+        }
     }
+    
 );
