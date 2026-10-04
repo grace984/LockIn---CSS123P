@@ -936,7 +936,7 @@ public class MainFrame extends JFrame {
 JPanel warningSettings =
         settingsGroup(
                 "Tracker Warning Message",
-                ramiraTrackerPanel.getWarningMessages(),   // was new String[]{"Version 1", ...}nmm,n,bnjkhjkhjhj
+                ramiraTrackerPanel.getWarningMessages(),   // was new String[]{"Version 1", ...}
                 ramiraTrackerPanel.getWarningVersion(),
                 ramiraTrackerPanel::setWarningVersion
         );
