@@ -3,6 +3,11 @@ let warningShown = false;
 let warningOverlay = null;
 let currentSound = 2;
 
+
+// ========================================
+// LOAD RESTRICTED SITES
+// ========================================
+
 async function loadRestrictedSites() {
     try {
         const response = await chrome.runtime.sendMessage({
@@ -13,9 +18,17 @@ async function loadRestrictedSites() {
             restrictedSites = response;
         }
     } catch (error) {
-        console.log("LockIn restricted sites error:", error);
+        console.log(
+            "LockIn restricted sites error:",
+            error
+        );
     }
 }
+
+
+// ========================================
+// LOAD SELECTED SOUND
+// ========================================
 
 async function loadSelectedSound() {
     try {
@@ -28,24 +41,47 @@ async function loadSelectedSound() {
         } else {
             currentSound = 2;
         }
+
+        console.log(
+            "LockIn selected sound:",
+            currentSound
+        );
+
     } catch (error) {
-        console.log("LockIn sound error:", error);
+
+        console.log(
+            "LockIn sound error:",
+            error
+        );
+
         currentSound = 2;
     }
 }
 
+
+// ========================================
+// GET TIMER STATUS
+// ========================================
+
 async function getTimerStatus() {
     try {
-        const response = await chrome.runtime.sendMessage({
-            action: "getTimerStatus"
-        });
+
+        const response =
+            await chrome.runtime.sendMessage({
+                action: "getTimerStatus"
+            });
 
         return response || {
             active: false,
             mode: "unknown"
         };
+
     } catch (error) {
-        console.log("LockIn timer error:", error);
+
+        console.log(
+            "LockIn timer error:",
+            error
+        );
 
         return {
             active: false,
@@ -54,16 +90,28 @@ async function getTimerStatus() {
     }
 }
 
+
+// ========================================
+// GET WARNING MESSAGE
+// ========================================
+
 async function getWarningMessage() {
     try {
-        const response = await chrome.runtime.sendMessage({
-            action: "getWarningMessage"
-        });
+
+        const response =
+            await chrome.runtime.sendMessage({
+                action: "getWarningMessage"
+            });
 
         return response ||
             "This website is on your distraction list.";
+
     } catch (error) {
-        console.log("LockIn warning message error:", error);
+
+        console.log(
+            "LockIn warning message error:",
+            error
+        );
 
         return "This website is on your distraction list.";
     }
@@ -71,76 +119,30 @@ async function getWarningMessage() {
 
 
 // ========================================
-// BEEP SOUND
+// PLAY WARNING SOUND
 // ========================================
 
-function playBeep() {
+async function playWarningSound() {
+
+    console.log(
+        "LockIn requesting warning sound:",
+        currentSound
+    );
+
     try {
-        const AudioContext =
-            window.AudioContext ||
-            window.webkitAudioContext;
 
-        const audioContext = new AudioContext();
-
-        const oscillator =
-            audioContext.createOscillator();
-
-        const gainNode =
-            audioContext.createGain();
-
-        // Electronic beep
-        oscillator.type = "square";
-
-        oscillator.frequency.setValueAtTime(
-            1000,
-            audioContext.currentTime
-        );
-
-        // BEEP VOLUME / GAIN
-        gainNode.gain.setValueAtTime(
-            0.45,
-            audioContext.currentTime
-        );
-
-        // Short beep
-        gainNode.gain.exponentialRampToValueAtTime(
-            0.01,
-            audioContext.currentTime + 0.18
-        );
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.start();
-
-        oscillator.stop(
-            audioContext.currentTime + 0.18
-        );
+        await chrome.runtime.sendMessage({
+            action: "playWarningSound",
+            sound: currentSound
+        });
 
     } catch (error) {
-        console.log("LockIn beep error:", error);
+
+        console.log(
+            "LockIn warning sound request error:",
+            error
+        );
     }
-}
-
-
-// ========================================
-// PLAY SELECTED WARNING SOUND
-// ========================================
-
-function playWarningSound() {
-
-    // Sound 1 = one BEEP
-    if (currentSound === 1) {
-        playBeep();
-        return;
-    }
-
-    // Sound 2 = BEEP BEEP
-    playBeep();
-
-    setTimeout(() => {
-        playBeep();
-    }, 250);
 }
 
 
@@ -156,6 +158,7 @@ function showWarning(message) {
 
     warningShown = true;
 
+    // Play sound when warning first appears
     playWarningSound();
 
     warningOverlay =
@@ -194,11 +197,13 @@ function showWarning(message) {
     warningOverlay.style.fontFamily =
         "Arial, sans-serif";
 
+
     warningOverlay.innerHTML = `
         <div style="
             max-width: 600px;
             padding: 40px;
         ">
+
             <div style="
                 font-size: 64px;
                 margin-bottom: 20px;
@@ -229,8 +234,10 @@ function showWarning(message) {
             ">
                 This website is restricted during your Work session.
             </p>
+
         </div>
     `;
+
 
     document.body.appendChild(
         warningOverlay
@@ -245,7 +252,9 @@ function showWarning(message) {
 function removeWarning() {
 
     if (warningOverlay) {
+
         warningOverlay.remove();
+
         warningOverlay = null;
     }
 
@@ -260,39 +269,51 @@ function removeWarning() {
 async function checkWebsite() {
 
     await loadRestrictedSites();
+
     await loadSelectedSound();
+
 
     const timerStatus =
         await getTimerStatus();
 
-    // Only warn during active Work timer
+
     if (
         !timerStatus.active ||
         timerStatus.mode !== "work"
     ) {
+
         removeWarning();
+
         return;
     }
+
 
     const hostname =
         window.location.hostname
             .replace(/^www\./, "")
             .toLowerCase();
 
+
     const isRestricted =
-        restrictedSites.some(site => {
+        restrictedSites.some(
+            function (site) {
 
-            const cleanSite =
-                String(site)
-                    .replace(/^www\./, "")
-                    .toLowerCase()
-                    .trim();
+                const cleanSite =
+                    String(site)
+                        .replace(/^www\./, "")
+                        .toLowerCase()
+                        .trim();
 
-            return (
-                hostname === cleanSite ||
-                hostname.endsWith("." + cleanSite)
-            );
-        });
+
+                return (
+                    hostname === cleanSite ||
+                    hostname.endsWith(
+                        "." + cleanSite
+                    )
+                );
+            }
+        );
+
 
     if (isRestricted) {
 
@@ -330,7 +351,11 @@ function escapeHtml(text) {
 checkWebsite();
 
 
-// Check again periodically
-setInterval(() => {
-    checkWebsite();
-}, 2000);
+setInterval(
+    function () {
+
+        checkWebsite();
+
+    },
+    2000
+);

@@ -4,7 +4,8 @@
     "version": "1.0",
     "description": "Tracks websites and warns users about distraction sites.",
     "permissions": [
-        "tabs"
+        "tabs",
+        "offscreen"
     ],
     "host_permissions": [
         "http://localhost:8080/*",

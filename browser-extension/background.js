@@ -1,41 +1,74 @@
+const OFFSCREEN_DOCUMENT = "offscreen.html";
+
+let creatingOffscreenDocument = null;
+
+
+// ================================
+// TRACK ACTIVE TAB
+// ================================
+
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
-
     try {
-
-        const tab =
-            await chrome.tabs.get(
-                activeInfo.tabId
-            );
+        const tab = await chrome.tabs.get(activeInfo.tabId);
 
         if (tab.url) {
             sendWebsite(tab.url);
         }
-
     } catch (error) {
-
-        console.log(error);
-
+        console.log("LockIn tab activation error:", error);
     }
 });
 
 
-chrome.tabs.onUpdated.addListener(
-    (tabId, changeInfo) => {
+// ================================
+// TRACK URL CHANGES + PAGE LOAD
+// ================================
 
-        if (changeInfo.url) {
+chrome.tabs.onUpdated.addListener(
+    (tabId, changeInfo, tab) => {
+
+        if (
+            changeInfo.url &&
+            changeInfo.url === tab.url
+        ) {
             sendWebsite(changeInfo.url);
         }
 
+        if (
+            changeInfo.status === "complete" &&
+            tab.url
+        ) {
+            sendWebsite(tab.url);
+        }
     }
 );
 
+
+// ================================
+// SEND WEBSITE TO JAVA API
+// ================================
 
 function sendWebsite(url) {
 
     try {
 
+        if (
+            !url ||
+            url.startsWith("chrome://") ||
+            url.startsWith("chrome-extension://") ||
+            url.startsWith("edge://") ||
+            url.startsWith("about:")
+        ) {
+            return;
+        }
+
         const website =
-            new URL(url).hostname;
+            new URL(url).hostname
+                .replace(/^www\./, "");
+
+        if (!website) {
+            return;
+        }
 
         fetch(
             "http://localhost:8080/website",
@@ -72,11 +105,110 @@ function sendWebsite(url) {
 
     } catch (error) {
 
-        console.log(error);
+        console.log(
+            "LockIn website tracking error:",
+            error
+        );
 
     }
 }
 
+
+// ================================
+// OFFSCREEN DOCUMENT
+// ================================
+
+async function setupOffscreenDocument() {
+
+    if (chrome.offscreen.hasDocument) {
+
+        const hasDocument =
+            await chrome.offscreen.hasDocument();
+
+        if (hasDocument) {
+            return;
+        }
+
+    } else {
+
+        const existingContexts =
+            await chrome.runtime.getContexts({
+                contextTypes: [
+                    "OFFSCREEN_DOCUMENT"
+                ],
+                documentUrls: [
+                    chrome.runtime.getURL(
+                        OFFSCREEN_DOCUMENT
+                    )
+                ]
+            });
+
+        if (existingContexts.length > 0) {
+            return;
+        }
+    }
+
+
+    if (creatingOffscreenDocument) {
+        await creatingOffscreenDocument;
+        return;
+    }
+
+
+    creatingOffscreenDocument =
+        chrome.offscreen.createDocument({
+            url: OFFSCREEN_DOCUMENT,
+
+            reasons: [
+                "AUDIO_PLAYBACK"
+            ],
+
+            justification:
+                "Play the LockIn warning sound when a restricted website is detected."
+        });
+
+
+    try {
+
+        await creatingOffscreenDocument;
+
+    } finally {
+
+        creatingOffscreenDocument = null;
+
+    }
+}
+
+
+// ================================
+// PLAY WARNING SOUND
+// ================================
+
+async function playWarningSound(sound) {
+
+    try {
+
+        await setupOffscreenDocument();
+
+        chrome.runtime.sendMessage({
+            action: "playWarningSound",
+            sound: sound
+        });
+
+    } catch (error) {
+
+        console.log(
+            "LockIn warning sound error:",
+            error
+        );
+
+    }
+}
+
+
+// ================================
+// MESSAGES FROM CONTENT.JS
+// ================================
 
 chrome.runtime.onMessage.addListener(
     function (
@@ -85,7 +217,11 @@ chrome.runtime.onMessage.addListener(
         sendResponse
     ) {
 
+
+        // ================================
         // GET RESTRICTED SITES
+        // ================================
+
         if (
             message.action ===
             "getRestrictedSites"
@@ -117,7 +253,10 @@ chrome.runtime.onMessage.addListener(
         }
 
 
+        // ================================
         // GET TIMER STATUS
+        // ================================
+
         if (
             message.action ===
             "getTimerStatus"
@@ -152,7 +291,10 @@ chrome.runtime.onMessage.addListener(
         }
 
 
+        // ================================
         // GET WARNING MESSAGE
+        // ================================
+
         if (
             message.action ===
             "getWarningMessage"
@@ -186,7 +328,10 @@ chrome.runtime.onMessage.addListener(
         }
 
 
+        // ================================
         // GET SELECTED SOUND
+        // ================================
+
         if (
             message.action ===
             "getSelectedSound"
@@ -226,5 +371,30 @@ chrome.runtime.onMessage.addListener(
 
             return true;
         }
+
+
+        // ================================
+        // PLAY WARNING SOUND
+        // ================================
+
+        if (
+            message.action ===
+            "playWarningSound"
+        ) {
+
+            const sound =
+                message.sound === 1
+                    ? 1
+                    : 2;
+
+            playWarningSound(sound);
+
+            sendResponse({
+                success: true
+            });
+
+            return true;
+        }
+
     }
 );
