@@ -43,8 +43,7 @@ function sendWebsite(url) {
                 method: "POST",
 
                 headers: {
-                    "Content-Type":
-                        "text/plain"
+                    "Content-Type": "text/plain"
                 },
 
                 body: website
@@ -152,6 +151,7 @@ chrome.runtime.onMessage.addListener(
             return true;
         }
 
+
         // GET WARNING MESSAGE
         if (
             message.action ===
@@ -184,6 +184,47 @@ chrome.runtime.onMessage.addListener(
 
             return true;
         }
+
+
+        // GET SELECTED SOUND
+        if (
+            message.action ===
+            "getSelectedSound"
+        ) {
+
+            fetch(
+                "http://localhost:8080/sound"
+            )
+            .then(response =>
+                response.text()
+            )
+            .then(text => {
+
+                const sound =
+                    Number.parseInt(
+                        text,
+                        10
+                    );
+
+                sendResponse(
+                    sound === 1 || sound === 2
+                        ? sound
+                        : 2
+                );
+
+            })
+            .catch(error => {
+
+                console.log(
+                    "LockIn selected sound error:",
+                    error
+                );
+
+                sendResponse(2);
+
+            });
+
+            return true;
+        }
     }
-    
 );
