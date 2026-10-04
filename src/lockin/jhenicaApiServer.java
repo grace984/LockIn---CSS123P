@@ -79,9 +79,11 @@ public class jhenicaApiServer {
         );
     }
 
-   
-     // WEBSITE ENDPOINT
-   
+    /*
+     * =========================================================
+     * WEBSITE ENDPOINT
+     * =========================================================
+     */
 
     private void handleWebsite(
             HttpExchange exchange

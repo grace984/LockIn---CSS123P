@@ -16,9 +16,14 @@ public class lauriceSettingsPanel extends JPanel {
     private static final Color TITLE = new Color(0x4A0F2A);
     private static final Color ORNAMENT_LINE = new Color(0xB8, 0x9A, 0x6B);
     private static final Color ROW_HOVER = new Color(0xEBDFC9);
+    private static final Color TEXT = new Color(0x5C3A12);      // brown, for the subtitle
+    private static final Color BAR_BG = new Color(0xC9B496);    // card outline
 
     // width of the centered content column (same as the other panels)
     private static final int COLUMN_W = 440;
+
+    // font of the big title (change it here if you want a different one)
+    private static final Font TITLE_FONT = new Font("Times New Roman", Font.BOLD, 32);
 
     // height of one radio option row
     private static final int ROW_H = 36;
@@ -55,17 +60,21 @@ public class lauriceSettingsPanel extends JPanel {
             soundGroup.add(b);
         }
 
-        // Tracker Warning Message: Version 1 is selected by default
-        warningButtons = new OptionButton[]{
-                new OptionButton("Version 1"),
-                new OptionButton("Version 2"),
-                new OptionButton("Version 3")
-        };
-        warningButtons[0].setSelected(true);
+        // Tracker Warning Message: the choices come from the Tracker panel,
+        // and the picked one is saved straight back to it
+        String[] messages = ramiraTrackerPanel.getWarningMessages();
+        warningButtons = new OptionButton[messages.length];
+
+        int picked = Math.max(0,
+                Math.min(messages.length - 1, ramiraTrackerPanel.getWarningVersion()));
 
         ButtonGroup warningGroup = new ButtonGroup();
-        for (OptionButton b : warningButtons) {
-            warningGroup.add(b);
+        for (int i = 0; i < messages.length; i++) {
+            final int index = i;
+            warningButtons[i] = new OptionButton(messages[i]);
+            warningButtons[i].setSelected(i == picked);
+            warningButtons[i].addActionListener(e -> ramiraTrackerPanel.setWarningVersion(index));
+            warningGroup.add(warningButtons[i]);
         }
     }
 
@@ -87,7 +96,7 @@ public class lauriceSettingsPanel extends JPanel {
 
         // header (same as the other panels)
         JLabel title = new JLabel("Settings", SwingConstants.CENTER);
-        title.setFont(spaced(new Font("Times New Roman", Font.BOLD, 32), 0.04f));
+        title.setFont(spaced(TITLE_FONT, 0.04f));
         title.setForeground(TITLE);
         add(fixed(title, 42));
         add(Box.createVerticalStrut(4));
@@ -97,7 +106,7 @@ public class lauriceSettingsPanel extends JPanel {
 
         JLabel subtitle = new JLabel("Customize your LockIn settings", SwingConstants.CENTER);
         subtitle.setFont(new Font("Times New Roman", Font.PLAIN, 15));
-        subtitle.setForeground(TITLE);
+        subtitle.setForeground(TEXT);
         subtitle.setVerticalAlignment(SwingConstants.TOP);
         add(fixed(subtitle, 52));
         add(Box.createVerticalStrut(18));
@@ -132,9 +141,10 @@ public class lauriceSettingsPanel extends JPanel {
 
     // a rounded box that holds a group of radio options
     private JPanel buildOptionCard(OptionButton[] buttons) {
-        RoundedPanel card = new RoundedPanel(BOX_BG, 14);
+        RoundedPanel card = new RoundedPanel(BOX_BG, 16);
+        card.setBaseOutline(BAR_BG);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(new EmptyBorder(8, 8, 8, 8));
+        card.setBorder(new EmptyBorder(8, 8, 12, 8)); // extra bottom space is for the shadow
 
         for (OptionButton b : buttons) {
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -143,18 +153,19 @@ public class lauriceSettingsPanel extends JPanel {
             card.add(b);
         }
 
-        return fixed(card, buttons.length * ROW_H + 16);
+        return fixed(card, buttons.length * ROW_H + 20);
     }
 
     private JPanel buildPrivacyCard() {
-        RoundedPanel card = new RoundedPanel(BOX_BG, 14);
+        RoundedPanel card = new RoundedPanel(BOX_BG, 16);
+        card.setBaseOutline(BAR_BG);
         card.setLayout(new BorderLayout());
-        card.setBorder(new EmptyBorder(14, 18, 14, 18));
+        card.setBorder(new EmptyBorder(14, 18, 18, 18)); // extra bottom space is for the shadow
         card.add(new WrappedText(
                 PRIVACY_TEXT,
                 new Font("Times New Roman", Font.ITALIC, 15),
                 TITLE), BorderLayout.CENTER);
-        return fixed(card, 112);
+        return fixed(card, 132); // tall enough for 5 lines of text
     }
 
     // =========================================================
@@ -188,16 +199,6 @@ public class lauriceSettingsPanel extends JPanel {
             }
         }
         return 2;
-    }
-
-    // 1, 2 or 3
-    public int getWarningVersion() {
-        for (int i = 0; i < warningButtons.length; i++) {
-            if (warningButtons[i].isSelected()) {
-                return i + 1;
-            }
-        }
-        return 1;
     }
 
     // ---------------------------------------------------------
@@ -284,10 +285,11 @@ public class lauriceSettingsPanel extends JPanel {
     // BOX, TEXT AND ORNAMENT (same look as the other panels)
     // =========================================================
 
-    // plain rounded box, no shadow
+    // rounded box with a thin outline and a soft shadow (the bottom 4px are reserved for it)
     private static class RoundedPanel extends JPanel {
         private final Color color;
         private final int radius;
+        private Color baseOutline;
 
         RoundedPanel(Color color, int radius) {
             this.color = color;
@@ -295,12 +297,31 @@ public class lauriceSettingsPanel extends JPanel {
             setOpaque(false);
         }
 
+        void setBaseOutline(Color c) {
+            this.baseOutline = c;
+            repaint();
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            int w = getWidth();
+            int h = getHeight() - 4;
+
+            for (int i = 0; i < 4; i++) {
+                g2.setColor(new Color(0x4A, 0x0F, 0x2A, 10));
+                g2.fillRoundRect(2, i + 1, w - 4, h, radius * 2, radius * 2);
+            }
+
             g2.setColor(color);
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius * 2, radius * 2);
+            g2.fillRoundRect(0, 0, w, h, radius * 2, radius * 2);
+
+            if (baseOutline != null) {
+                g2.setColor(baseOutline);
+                g2.setStroke(new BasicStroke(1.2f));
+                g2.drawRoundRect(1, 1, w - 3, h - 3, radius * 2, radius * 2);
+            }
             g2.dispose();
             super.paintComponent(g);
         }
