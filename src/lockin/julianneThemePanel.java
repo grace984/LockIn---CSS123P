@@ -1,20 +1,32 @@
 package lockin;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
 import java.awt.geom.Ellipse2D;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class julianneThemePanel extends JPanel
         implements julianneThemeManager.ThemeChangeListener {
 
-    // =========================================================
-    // FIXED UI COLORS
-    // =========================================================
+
+    // FIXED UI COLORS (same as the Tracker panel)
 
     private static final Color PANEL_BACKGROUND =
-            new Color(0xF7E9DF);
+            new Color(0xF2E6DC);
+
+    private static final Color BOX_BG =
+            new Color(0xF2E6DC);
+
+    private static final Color TITLE =
+            new Color(0x4A0F2A);
+
+    private static final Color ORNAMENT_LINE =
+            new Color(0xB8, 0x9A, 0x6B);
 
     private static final Color MAROON =
             new Color(0x59132C);
@@ -22,13 +34,19 @@ public class julianneThemePanel extends JPanel
     private static final Color WHITE =
             Color.WHITE;
 
-    // =========================================================
     // THEME GRID
-    // =========================================================
 
     private static final int COLUMNS = 4;
 
-    private static final int CIRCLE_SIZE = 80;
+    // CHANGE THIS to make the circles bigger or smaller
+    private static final int CIRCLE_SIZE = 64;
+
+    // CHANGE THIS to space the circles out more or less
+    // (space between two circles = GAP, on top of their size)
+    private static final int GAP = 16;
+
+    // width of the centered content column (same as the Tracker panel)
+    private static final int COLUMN_W = 440;
 
     // =========================================================
     // THEME CIRCLES
@@ -57,6 +75,25 @@ public class julianneThemePanel extends JPanel
     private final Timer checkmarkTimer;
 
     // =========================================================
+    // SMALL HELPERS
+    // =========================================================
+
+    // same font with extra letter spacing (matches the Tracker title)
+    private static Font spaced(Font f, float tracking) {
+        Map<TextAttribute, Object> attrs = new HashMap<>();
+        attrs.put(TextAttribute.TRACKING, tracking);
+        return f.deriveFont(attrs);
+    }
+
+    // gives a component a fixed height and centers it in the column
+    private <T extends JComponent> T fixed(T c, int height) {
+        c.setPreferredSize(new Dimension(COLUMN_W, height));
+        c.setMaximumSize(new Dimension(COLUMN_W, height));
+        c.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return c;
+    }
+
+    // =========================================================
     // CONSTRUCTOR
     // =========================================================
 
@@ -70,6 +107,32 @@ public class julianneThemePanel extends JPanel
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
+        // same padding as the Tracker panel
+        setBorder(new EmptyBorder(24, 48, 24, 48));
+
+        // pushes everything to the vertical middle
+        add(Box.createVerticalGlue());
+
+        // -----------------------------------------------------
+        // HEADER (same as the Tracker panel)
+        // -----------------------------------------------------
+
+        JLabel title = new JLabel("Themes", SwingConstants.CENTER);
+        title.setFont(spaced(new Font("Times New Roman", Font.BOLD, 32), 0.04f));
+        title.setForeground(TITLE);
+        add(fixed(title, 42));
+        add(Box.createVerticalStrut(4));
+
+        add(fixed(new OrnamentDivider(), 16));
+        add(Box.createVerticalStrut(6));
+
+        JLabel subtitle = new JLabel("Choose your gradient", SwingConstants.CENTER);
+        subtitle.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+        subtitle.setForeground(TITLE);
+        subtitle.setVerticalAlignment(SwingConstants.TOP);
+        add(fixed(subtitle, 52));
+        add(Box.createVerticalStrut(18));
+
         // -----------------------------------------------------
         // CREATE THE 4 x 4 GRID
         // -----------------------------------------------------
@@ -80,13 +143,12 @@ public class julianneThemePanel extends JPanel
                 );
 
         gridPanel.setOpaque(false);
-        gridPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
 
         GridBagConstraints gbc =
                 new GridBagConstraints();
 
         gbc.weightx = 0.0;
-        gbc.weighty = 1.0;
+        gbc.weighty = 0.0;
 
         gbc.anchor =
                 GridBagConstraints.CENTER;
@@ -96,10 +158,10 @@ public class julianneThemePanel extends JPanel
 
         gbc.insets =
                 new Insets(
-                        9,
-                        11,
-                        9,
-                        11
+                        GAP / 2,
+                        GAP / 2,
+                        GAP / 2,
+                        GAP / 2
                 );
 
         for (
@@ -132,35 +194,13 @@ public class julianneThemePanel extends JPanel
             );
         }
 
-        JLabel title = new JLabel("THEMES");
-        title.setFont(new Font("Times New Roman", Font.PLAIN, 34));
-        title.setForeground(MAROON);
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JLabel subtitle = new JLabel("Choose your gradient");
-        subtitle.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        subtitle.setForeground(MAROON);
-        subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JPanel headerPanel = new JPanel();
-        headerPanel.setOpaque(false);
-        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(96, 0, 0, 0));
-        headerPanel.setPreferredSize(new Dimension(471, 199));
-        headerPanel.setMinimumSize(new Dimension(471, 199));
-        headerPanel.setMaximumSize(new Dimension(471, 199));
-        headerPanel.add(title);
-        headerPanel.add(Box.createVerticalStrut(2));
-        headerPanel.add(subtitle);
-
-        gridPanel.setPreferredSize(new Dimension(471, 392));
-        gridPanel.setMinimumSize(new Dimension(471, 392));
-        gridPanel.setMaximumSize(new Dimension(471, 392));
-
-        headerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gridPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(headerPanel);
-        add(gridPanel);
+        // rounded box around the grid (no shadow)
+        RoundedPanel card = new RoundedPanel(BOX_BG, 14);
+        card.setLayout(new BorderLayout());
+        card.setBorder(new EmptyBorder(8, 8, 8, 8));
+        card.add(gridPanel, BorderLayout.CENTER);
+        add(fixed(card, 374));
+        add(Box.createVerticalStrut(20));
 
         // -----------------------------------------------------
         // RESET BUTTON
@@ -184,12 +224,8 @@ public class julianneThemePanel extends JPanel
                 resetButton
         );
 
-        bottomPanel.setPreferredSize(new Dimension(471, 52));
-        bottomPanel.setMinimumSize(new Dimension(471, 52));
-        bottomPanel.setMaximumSize(new Dimension(471, 52));
-        bottomPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(Box.createVerticalStrut(2));
-        add(bottomPanel);
+        add(fixed(bottomPanel, 52));
+
         add(Box.createVerticalGlue());
 
         // -----------------------------------------------------
@@ -323,6 +359,55 @@ public class julianneThemePanel extends JPanel
         }
 
         repaint();
+    }
+
+    // =========================================================
+    // BOX + ORNAMENT (same look as the Tracker panel)
+    // =========================================================
+
+    // plain rounded box, no shadow
+    private static class RoundedPanel extends JPanel {
+        private final Color color;
+        private final int radius;
+
+        RoundedPanel(Color color, int radius) {
+            this.color = color;
+            this.radius = radius;
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.setColor(color);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius * 2, radius * 2);
+
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    // thin line with a diamond in the middle, fading out at both ends
+    private static class OrnamentDivider extends JComponent {
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            int cx = getWidth() / 2;
+            int cy = getHeight() / 2;
+            Color clear = new Color(0xB8, 0x9A, 0x6B, 0);
+
+            g2.setPaint(new GradientPaint(cx - 150, 0, clear, cx - 14, 0, ORNAMENT_LINE));
+            g2.drawLine(cx - 150, cy, cx - 14, cy);
+            g2.setPaint(new GradientPaint(cx + 14, 0, ORNAMENT_LINE, cx + 150, 0, clear));
+            g2.drawLine(cx + 14, cy, cx + 150, cy);
+
+            g2.setColor(TITLE);
+            g2.fillPolygon(new int[]{cx, cx + 5, cx, cx - 5}, new int[]{cy - 5, cy, cy + 5, cy}, 4);
+            g2.dispose();
+        }
     }
 
     // =========================================================
@@ -746,3 +831,6 @@ public class julianneThemePanel extends JPanel
         }
     }
 }
+ 
+ 
+ 
