@@ -6,14 +6,22 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // Create the tracker panel
+        // Create ONE tracker panel
         ramiraTrackerPanel trackerPanel =
                 new ramiraTrackerPanel();
 
-        // Give the same tracker panel to the API server
+        // Create ONE timer panel
+        lauriceTimerPanel timerPanel =
+                new lauriceTimerPanel();
+
+        /*
+         * Give the SAME tracker panel and
+         * SAME timer panel to the API server.
+         */
         jhenicaApiServer apiServer =
                 new jhenicaApiServer(
-                        trackerPanel
+                        trackerPanel,
+                        timerPanel
                 );
 
         try {
@@ -28,7 +36,14 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
 
-            new MainFrame().setVisible(true);
+            /*
+             * Give the SAME tracker panel and
+             * SAME timer panel to the UI.
+             */
+            new MainFrame(
+                    trackerPanel,
+                    timerPanel
+            ).setVisible(true);
 
         });
     }
