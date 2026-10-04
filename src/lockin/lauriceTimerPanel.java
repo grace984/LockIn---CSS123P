@@ -40,10 +40,23 @@ public class lauriceTimerPanel extends JPanel {
 
     private void createComponents() {
         timerLabel = new JLabel("25:00");
-        timerLabel.setFont(new Font("Times New Roman", Font.BOLD, 186));
-        timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        timerLabel.setFont(
+                new Font(
+                        "Times New Roman",
+                        Font.BOLD,
+                        186
+                )
+        );
+
+        timerLabel.setHorizontalAlignment(
+                SwingConstants.CENTER
+        );
+
         timerLabel.setForeground(CREAM);
-        timerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        timerLabel.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
 
         workButton = new ModeButton("Work", 144);
         breakButton = new ModeButton("Break", 142);
@@ -61,102 +74,178 @@ public class lauriceTimerPanel extends JPanel {
         resetButton = new IconButton("reset");
 
         controlPanel = new JPanel(
-                new FlowLayout(FlowLayout.CENTER, 10, 0)
+                new FlowLayout(
+                        FlowLayout.CENTER,
+                        10,
+                        0
+                )
         );
 
         controlPanel.setOpaque(false);
 
-        workButton.addActionListener(e -> selectSession(true));
-        breakButton.addActionListener(e -> selectSession(false));
+        workButton.addActionListener(
+                e -> selectSession(true)
+        );
+
+        breakButton.addActionListener(
+                e -> selectSession(false)
+        );
     }
 
     private void createLayout() {
         setLayout(new BorderLayout());
 
-        setPreferredSize(new Dimension(638, 520));
-        setMinimumSize(new Dimension(638, 520));
-        setMaximumSize(new Dimension(638, 520));
+        setPreferredSize(
+                new Dimension(638, 520)
+        );
+
+        setMinimumSize(
+                new Dimension(638, 520)
+        );
+
+        setMaximumSize(
+                new Dimension(638, 520)
+        );
+
         setOpaque(false);
 
         JPanel content = new JPanel();
+
         content.setOpaque(false);
-        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+
+        content.setLayout(
+                new BoxLayout(
+                        content,
+                        BoxLayout.Y_AXIS
+                )
+        );
+
         content.setBorder(
-                BorderFactory.createEmptyBorder(75, 0, 70, 0)
+                BorderFactory.createEmptyBorder(
+                        75,
+                        0,
+                        70,
+                        0
+                )
         );
 
         JPanel modeRow = new JPanel(
-                new FlowLayout(FlowLayout.CENTER, 40, 0)
+                new FlowLayout(
+                        FlowLayout.CENTER,
+                        40,
+                        0
+                )
         );
 
         modeRow.setOpaque(false);
+
         modeRow.add(workButton);
         modeRow.add(breakButton);
 
-        content.add(Box.createVerticalGlue());
+        content.add(
+                Box.createVerticalGlue()
+        );
 
-        modeRow.setAlignmentX(Component.CENTER_ALIGNMENT);
+        modeRow.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
         content.add(modeRow);
 
-        content.add(Box.createVerticalStrut(38));
+        content.add(
+                Box.createVerticalStrut(38)
+        );
+
         content.add(timerLabel);
 
-        content.add(Box.createVerticalStrut(28));
+        content.add(
+                Box.createVerticalStrut(28)
+        );
 
-        controlPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        controlPanel.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
         content.add(controlPanel);
 
-        content.add(Box.createVerticalGlue());
+        content.add(
+                Box.createVerticalGlue()
+        );
 
-        add(content, BorderLayout.CENTER);
+        add(
+                content,
+                BorderLayout.CENTER
+        );
     }
 
     private void createTimer() {
-        timer = new Timer(1000, e -> {
-            if (timeLeft > 0) {
-                timeLeft--;
-                updateDisplay();
-            } else {
-                switchSession();
-            }
-        });
+
+        timer = new Timer(
+                1000,
+                e -> {
+
+                    if (timeLeft > 0) {
+
+                        timeLeft--;
+
+                        updateDisplay();
+
+                    } else {
+
+                        switchSession();
+                    }
+                }
+        );
     }
 
     private void createButtonActions() {
-        startButton.addActionListener(e -> {
-            hasStarted = true;
-            startTimer();
-        });
 
-        pauseButton.addActionListener(e -> {
-            pauseTimer();
-        });
+        startButton.addActionListener(
+                e -> {
 
-        resumeButton.addActionListener(e -> {
-            startTimer();
-        });
+                    hasStarted = true;
 
-        resetButton.addActionListener(e -> {
-            resetTimer();
-        });
+                    startTimer();
+                }
+        );
+
+        pauseButton.addActionListener(
+                e -> pauseTimer()
+        );
+
+        resumeButton.addActionListener(
+                e -> startTimer()
+        );
+
+        resetButton.addActionListener(
+                e -> resetTimer()
+        );
     }
 
     public void startTimer() {
+
         timer.start();
+
         hasStarted = true;
+
         updateDisplay();
     }
 
     public void pauseTimer() {
+
         timer.stop();
+
         updateDisplay();
     }
 
     public void resetTimer() {
+
         timer.stop();
 
         workSession = true;
+
         timeLeft = workDuration;
+
         hasStarted = false;
 
         workButton.setSelected(true);
@@ -165,19 +254,58 @@ public class lauriceTimerPanel extends JPanel {
     }
 
     public void skipSession() {
+
         switchSession();
     }
 
+    public String getRemainingText() {
+
+        int minutes =
+                timeLeft / 60;
+
+        int seconds =
+                timeLeft % 60;
+
+        return String.format(
+                "%02d:%02d",
+                minutes,
+                seconds
+        );
+    }
+
+    public void pause() {
+
+        pauseTimer();
+    }
+
+    public void resume() {
+
+        startTimer();
+    }
+
+    public void reset() {
+
+        resetTimer();
+    }
+
     private void switchSession() {
+
         timer.stop();
 
         if (workSession) {
+
             workSession = false;
+
             timeLeft = breakDuration;
+
             breakButton.setSelected(true);
+
         } else {
+
             workSession = true;
+
             timeLeft = workDuration;
+
             workButton.setSelected(true);
         }
 
@@ -187,93 +315,186 @@ public class lauriceTimerPanel extends JPanel {
     }
 
     private void updateDisplay() {
-        int minutes = timeLeft / 60;
-        int seconds = timeLeft % 60;
+
+        int minutes =
+                timeLeft / 60;
+
+        int seconds =
+                timeLeft % 60;
 
         timerLabel.setText(
-                String.format("%02d:%02d", minutes, seconds)
+                String.format(
+                        "%02d:%02d",
+                        minutes,
+                        seconds
+                )
         );
 
         controlPanel.removeAll();
 
         if (!hasStarted) {
-            controlPanel.add(startButton);
+
+            controlPanel.add(
+                    startButton
+            );
+
         } else if (timer.isRunning()) {
-            controlPanel.add(pauseButton);
-            controlPanel.add(resetButton);
+
+            controlPanel.add(
+                    pauseButton
+            );
+
+            controlPanel.add(
+                    resetButton
+            );
+
         } else {
-            controlPanel.add(resumeButton);
-            controlPanel.add(resetButton);
+
+            controlPanel.add(
+                    resumeButton
+            );
+
+            controlPanel.add(
+                    resetButton
+            );
         }
 
         controlPanel.revalidate();
         controlPanel.repaint();
     }
 
-    private void selectSession(boolean work) {
+    private void selectSession(
+            boolean work
+    ) {
+
         if (timer.isRunning()) {
+
             timer.stop();
         }
 
         hasStarted = false;
+
         workSession = work;
 
-        timeLeft = work
-                ? workDuration
-                : breakDuration;
+        timeLeft =
+                work
+                        ? workDuration
+                        : breakDuration;
 
         updateDisplay();
     }
 
+    /*
+     * =========================================================
+     * TIMER STATUS METHODS
+     * =========================================================
+     */
+
     public boolean isWorkSession() {
+
         return workSession;
     }
 
     public boolean isBreakSession() {
+
         return !workSession;
     }
 
     public boolean isTimerRunning() {
+
         return timer.isRunning();
     }
 
+    /*
+     * THIS METHOD IS USED BY THE API SERVER.
+     *
+     * TRUE ONLY WHEN:
+     * 1. Current session is Work
+     * 2. Timer is actually running
+     *
+     * FALSE WHEN:
+     * - Work timer is not started
+     * - Work timer is paused
+     * - Work timer is reset
+     * - Break session
+     * - Break timer is running
+     */
+    public boolean isWorkTimerActive() {
+
+        return workSession
+                && timer.isRunning();
+    }
+
     public int getTimeLeft() {
+
         return timeLeft;
     }
 
     public int getWorkDuration() {
+
         return workDuration;
     }
 
     public int getBreakDuration() {
+
         return breakDuration;
     }
 
-    public void setWorkDuration(int seconds) {
-        workDuration = Math.max(60, seconds);
+    public void setWorkDuration(
+            int seconds
+    ) {
 
-        if (workSession && !timer.isRunning()) {
+        workDuration =
+                Math.max(
+                        60,
+                        seconds
+                );
+
+        if (
+                workSession
+                        && !timer.isRunning()
+        ) {
+
             timeLeft = workDuration;
+
             hasStarted = false;
+
             updateDisplay();
         }
     }
 
-    public void setBreakDuration(int seconds) {
-        breakDuration = Math.max(60, seconds);
+    public void setBreakDuration(
+            int seconds
+    ) {
 
-        if (!workSession && !timer.isRunning()) {
+        breakDuration =
+                Math.max(
+                        60,
+                        seconds
+                );
+
+        if (
+                !workSession
+                        && !timer.isRunning()
+        ) {
+
             timeLeft = breakDuration;
+
             hasStarted = false;
+
             updateDisplay();
         }
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
+    protected void paintComponent(
+            Graphics g
+    ) {
+
         super.paintComponent(g);
 
-        Graphics2D g2 = (Graphics2D) g.create();
+        Graphics2D g2 =
+                (Graphics2D) g.create();
 
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
@@ -282,7 +503,8 @@ public class lauriceTimerPanel extends JPanel {
 
         g2.setColor(
                 new Color(
-                        0xFFF5E4 | 0x1C000000,
+                        0xFFF5E4
+                                | 0x1C000000,
                         true
                 )
         );
@@ -299,9 +521,14 @@ public class lauriceTimerPanel extends JPanel {
         g2.dispose();
     }
 
-    private static class ModeButton extends JToggleButton {
+    private static class ModeButton
+            extends JToggleButton {
 
-        ModeButton(String label, int width) {
+        ModeButton(
+                String label,
+                int width
+        ) {
+
             super(label);
 
             setFont(
@@ -313,7 +540,10 @@ public class lauriceTimerPanel extends JPanel {
             );
 
             Dimension size =
-                    new Dimension(width, 46);
+                    new Dimension(
+                            width,
+                            46
+                    );
 
             setPreferredSize(size);
             setMinimumSize(size);
@@ -326,7 +556,10 @@ public class lauriceTimerPanel extends JPanel {
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
+        protected void paintComponent(
+                Graphics g
+        ) {
+
             Graphics2D g2 =
                     (Graphics2D) g.create();
 
@@ -335,24 +568,34 @@ public class lauriceTimerPanel extends JPanel {
                     RenderingHints.VALUE_ANTIALIAS_ON
             );
 
-            boolean active = isSelected();
+            boolean active =
+                    isSelected();
 
             int inset = 1;
-            int arc = getHeight() - inset * 2;
+
+            int arc =
+                    getHeight()
+                            - inset * 2;
 
             if (active) {
+
                 g2.setColor(CREAM);
 
                 g2.fillRoundRect(
                         inset,
                         inset,
-                        getWidth() - inset * 2,
-                        getHeight() - inset * 2,
+                        getWidth()
+                                - inset * 2,
+                        getHeight()
+                                - inset * 2,
                         arc,
                         arc
                 );
+
             } else {
+
                 g2.setColor(CREAM);
+
                 g2.setStroke(
                         new BasicStroke(2f)
                 );
@@ -360,30 +603,39 @@ public class lauriceTimerPanel extends JPanel {
                 g2.drawRoundRect(
                         inset,
                         inset,
-                        getWidth() - inset * 2,
-                        getHeight() - inset * 2,
+                        getWidth()
+                                - inset * 2,
+                        getHeight()
+                                - inset * 2,
                         arc,
                         arc
                 );
             }
 
             g2.setFont(getFont());
+
             g2.setColor(
-                    active ? BROWN : CREAM
+                    active
+                            ? BROWN
+                            : CREAM
             );
 
             FontMetrics fm =
                     g2.getFontMetrics();
 
             int x =
-                    (getWidth()
-                            - fm.stringWidth(getText()))
-                            / 2;
+                    (
+                            getWidth()
+                                    - fm.stringWidth(
+                                    getText()
+                            )
+                    ) / 2;
 
             int y =
-                    (getHeight()
-                            - fm.getHeight())
-                            / 2
+                    (
+                            getHeight()
+                                    - fm.getHeight()
+                    ) / 2
                             + fm.getAscent();
 
             g2.drawString(
@@ -396,9 +648,11 @@ public class lauriceTimerPanel extends JPanel {
         }
     }
 
-    private static class StartButton extends JButton {
+    private static class StartButton
+            extends JButton {
 
         StartButton(String text) {
+
             super(text);
 
             setFont(
@@ -412,15 +666,24 @@ public class lauriceTimerPanel extends JPanel {
             setForeground(BROWN);
 
             setPreferredSize(
-                    new Dimension(174, 56)
+                    new Dimension(
+                            174,
+                            56
+                    )
             );
 
             setMinimumSize(
-                    new Dimension(174, 56)
+                    new Dimension(
+                            174,
+                            56
+                    )
             );
 
             setMaximumSize(
-                    new Dimension(174, 56)
+                    new Dimension(
+                            174,
+                            56
+                    )
             );
 
             setBorderPainted(false);
@@ -430,7 +693,10 @@ public class lauriceTimerPanel extends JPanel {
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
+        protected void paintComponent(
+                Graphics g
+        ) {
+
             Graphics2D g2 =
                     (Graphics2D) g.create();
 
@@ -451,20 +717,25 @@ public class lauriceTimerPanel extends JPanel {
             );
 
             g2.setFont(getFont());
+
             g2.setColor(BROWN);
 
             FontMetrics fm =
                     g2.getFontMetrics();
 
             int x =
-                    (getWidth()
-                            - fm.stringWidth(getText()))
-                            / 2;
+                    (
+                            getWidth()
+                                    - fm.stringWidth(
+                                    getText()
+                            )
+                    ) / 2;
 
             int y =
-                    (getHeight()
-                            - fm.getHeight())
-                            / 2
+                    (
+                            getHeight()
+                                    - fm.getHeight()
+                    ) / 2
                             + fm.getAscent();
 
             g2.drawString(
@@ -477,23 +748,34 @@ public class lauriceTimerPanel extends JPanel {
         }
     }
 
-    private static class IconButton extends JButton {
+    private static class IconButton
+            extends JButton {
 
         private final String type;
 
         IconButton(String type) {
+
             this.type = type;
 
             setPreferredSize(
-                    new Dimension(58, 56)
+                    new Dimension(
+                            58,
+                            56
+                    )
             );
 
             setMinimumSize(
-                    new Dimension(58, 56)
+                    new Dimension(
+                            58,
+                            56
+                    )
             );
 
             setMaximumSize(
-                    new Dimension(58, 56)
+                    new Dimension(
+                            58,
+                            56
+                    )
             );
 
             setBorderPainted(false);
@@ -503,7 +785,10 @@ public class lauriceTimerPanel extends JPanel {
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
+        protected void paintComponent(
+                Graphics g
+        ) {
+
             Graphics2D g2 =
                     (Graphics2D) g.create();
 
@@ -525,7 +810,10 @@ public class lauriceTimerPanel extends JPanel {
 
             g2.setColor(BROWN);
 
-            if (type.equals("pause")) {
+            if (
+                    type.equals("pause")
+            ) {
+
                 g2.fillRoundRect(
                         21,
                         17,
@@ -545,7 +833,10 @@ public class lauriceTimerPanel extends JPanel {
                 );
             }
 
-            if (type.equals("play")) {
+            if (
+                    type.equals("play")
+            ) {
+
                 Polygon triangle =
                         new Polygon();
 
@@ -564,10 +855,15 @@ public class lauriceTimerPanel extends JPanel {
                         28
                 );
 
-                g2.fillPolygon(triangle);
+                g2.fillPolygon(
+                        triangle
+                );
             }
 
-            if (type.equals("reset")) {
+            if (
+                    type.equals("reset")
+            ) {
+
                 g2.setStroke(
                         new BasicStroke(
                                 3f,
@@ -603,7 +899,9 @@ public class lauriceTimerPanel extends JPanel {
                         20
                 );
 
-                g2.fillPolygon(arrow);
+                g2.fillPolygon(
+                        arrow
+                );
             }
 
             g2.dispose();
