@@ -14,10 +14,24 @@ public class lauriceSettingsPanel extends JPanel {
     private static final Color PANEL_BACKGROUND = new Color(0xF2E6DC);
     private static final Color BOX_BG = new Color(0xE0CEB3);
     private static final Color TITLE = new Color(0x4A0F2A);
-    private static final Color ORNAMENT_LINE = new Color(0xB8, 0x9A, 0x6B);
-    private static final Color ROW_HOVER = new Color(0xEBDFC9);
+    private static final Color ORNAMENT_LINE =
+            new Color(0xB8, 0x9A, 0x6B);
+    private static final Color ROW_HOVER =
+            new Color(0xEBDFC9);
+    private static final Color TEXT =
+            new Color(0x5C3A12);
+    private static final Color BAR_BG =
+            new Color(0xC9B496);
 
     private static final int COLUMN_W = 440;
+
+    private static final Font TITLE_FONT =
+            new Font(
+                    "Times New Roman",
+                    Font.BOLD,
+                    32
+            );
+
     private static final int ROW_H = 36;
 
     private static final String PRIVACY_TEXT =
@@ -30,9 +44,13 @@ public class lauriceSettingsPanel extends JPanel {
     // =========================================================
 
     private static final Preferences SETTINGS =
-            Preferences.userNodeForPackage(lauriceSettingsPanel.class);
+            Preferences.userNodeForPackage(
+                    lauriceSettingsPanel.class
+            );
 
-    private static final String SOUND_KEY = "selectedSound";
+    private static final String SOUND_KEY =
+            "selectedSound";
+
     private static final int DEFAULT_SOUND = 2;
 
     private OptionButton[] soundButtons;
@@ -63,9 +81,12 @@ public class lauriceSettingsPanel extends JPanel {
             soundButtons[1].setSelected(true);
         }
 
-        ButtonGroup soundGroup = new ButtonGroup();
+        ButtonGroup soundGroup =
+                new ButtonGroup();
 
-        for (int i = 0; i < soundButtons.length; i++) {
+        for (int i = 0;
+             i < soundButtons.length;
+             i++) {
 
             final int soundNumber = i + 1;
 
@@ -76,19 +97,46 @@ public class lauriceSettingsPanel extends JPanel {
             );
         }
 
+        // =====================================================
         // TRACKER WARNING MESSAGE
-        warningButtons = new OptionButton[]{
-                new OptionButton("Version 1"),
-                new OptionButton("Version 2"),
-                new OptionButton("Version 3")
-        };
+        // =====================================================
 
-        warningButtons[0].setSelected(true);
+        String[] messages =
+                ramiraTrackerPanel.getWarningMessages();
 
-        ButtonGroup warningGroup = new ButtonGroup();
+        warningButtons =
+                new OptionButton[messages.length];
 
-        for (OptionButton b : warningButtons) {
-            warningGroup.add(b);
+        int picked = Math.max(
+                0,
+                Math.min(
+                        messages.length - 1,
+                        ramiraTrackerPanel.getWarningVersion()
+                )
+        );
+
+        ButtonGroup warningGroup =
+                new ButtonGroup();
+
+        for (int i = 0;
+             i < messages.length;
+             i++) {
+
+            final int index = i;
+
+            warningButtons[i] =
+                    new OptionButton(messages[i]);
+
+            warningButtons[i].setSelected(
+                    i == picked
+            );
+
+            warningButtons[i].addActionListener(
+                    e -> ramiraTrackerPanel
+                            .setWarningVersion(index)
+            );
+
+            warningGroup.add(warningButtons[i]);
         }
     }
 
@@ -127,6 +175,7 @@ public class lauriceSettingsPanel extends JPanel {
     // =========================================================
 
     public static int getSavedSoundPreference() {
+
         return SETTINGS.getInt(
                 SOUND_KEY,
                 DEFAULT_SOUND
@@ -141,21 +190,34 @@ public class lauriceSettingsPanel extends JPanel {
 
         setBackground(PANEL_BACKGROUND);
         setOpaque(true);
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        setBorder(new EmptyBorder(24, 48, 24, 48));
+        setLayout(
+                new BoxLayout(
+                        this,
+                        BoxLayout.Y_AXIS
+                )
+        );
+
+        setBorder(
+                new EmptyBorder(
+                        24,
+                        48,
+                        24,
+                        48
+                )
+        );
 
         add(Box.createVerticalGlue());
 
-        JLabel title = new JLabel("Settings", SwingConstants.CENTER);
+        JLabel title =
+                new JLabel(
+                        "Settings",
+                        SwingConstants.CENTER
+                );
 
         title.setFont(
                 spaced(
-                        new Font(
-                                "Times New Roman",
-                                Font.BOLD,
-                                32
-                        ),
+                        TITLE_FONT,
                         0.04f
                 )
         );
@@ -164,16 +226,26 @@ public class lauriceSettingsPanel extends JPanel {
 
         add(fixed(title, 42));
 
-        add(Box.createVerticalStrut(4));
-
-        add(fixed(new OrnamentDivider(), 16));
-
-        add(Box.createVerticalStrut(6));
-
-        JLabel subtitle = new JLabel(
-                "Customize your LockIn settings",
-                SwingConstants.CENTER
+        add(
+                Box.createVerticalStrut(4)
         );
+
+        add(
+                fixed(
+                        new OrnamentDivider(),
+                        16
+                )
+        );
+
+        add(
+                Box.createVerticalStrut(6)
+        );
+
+        JLabel subtitle =
+                new JLabel(
+                        "Customize your LockIn settings",
+                        SwingConstants.CENTER
+                );
 
         subtitle.setFont(
                 new Font(
@@ -183,12 +255,17 @@ public class lauriceSettingsPanel extends JPanel {
                 )
         );
 
-        subtitle.setForeground(TITLE);
-        subtitle.setVerticalAlignment(SwingConstants.TOP);
+        subtitle.setForeground(TEXT);
+
+        subtitle.setVerticalAlignment(
+                SwingConstants.TOP
+        );
 
         add(fixed(subtitle, 52));
 
-        add(Box.createVerticalStrut(18));
+        add(
+                Box.createVerticalStrut(18)
+        );
 
         add(
                 fixed(
@@ -197,11 +274,17 @@ public class lauriceSettingsPanel extends JPanel {
                 )
         );
 
-        add(Box.createVerticalStrut(6));
+        add(
+                Box.createVerticalStrut(6)
+        );
 
-        add(buildOptionCard(soundButtons));
+        add(
+                buildOptionCard(soundButtons)
+        );
 
-        add(Box.createVerticalStrut(16));
+        add(
+                Box.createVerticalStrut(16)
+        );
 
         add(
                 fixed(
@@ -212,20 +295,30 @@ public class lauriceSettingsPanel extends JPanel {
                 )
         );
 
-        add(Box.createVerticalStrut(6));
+        add(
+                Box.createVerticalStrut(6)
+        );
 
-        add(buildOptionCard(warningButtons));
+        add(
+                buildOptionCard(warningButtons)
+        );
 
-        add(Box.createVerticalStrut(16));
+        add(
+                Box.createVerticalStrut(16)
+        );
 
         add(
                 fixed(
-                        sectionLabel("PRIVACY STATEMENT"),
+                        sectionLabel(
+                                "PRIVACY STATEMENT"
+                        ),
                         24
                 )
         );
 
-        add(Box.createVerticalStrut(6));
+        add(
+                Box.createVerticalStrut(6)
+        );
 
         add(buildPrivacyCard());
 
@@ -261,6 +354,10 @@ public class lauriceSettingsPanel extends JPanel {
         return l;
     }
 
+    // =========================================================
+    // OPTION CARD
+    // =========================================================
+
     private JPanel buildOptionCard(
             OptionButton[] buttons
     ) {
@@ -268,8 +365,10 @@ public class lauriceSettingsPanel extends JPanel {
         RoundedPanel card =
                 new RoundedPanel(
                         BOX_BG,
-                        14
+                        16
                 );
+
+        card.setBaseOutline(BAR_BG);
 
         card.setLayout(
                 new BoxLayout(
@@ -282,7 +381,7 @@ public class lauriceSettingsPanel extends JPanel {
                 new EmptyBorder(
                         8,
                         8,
-                        8,
+                        12,
                         8
                 )
         );
@@ -312,7 +411,7 @@ public class lauriceSettingsPanel extends JPanel {
 
         return fixed(
                 card,
-                buttons.length * ROW_H + 16
+                buttons.length * ROW_H + 20
         );
     }
 
@@ -321,8 +420,10 @@ public class lauriceSettingsPanel extends JPanel {
         RoundedPanel card =
                 new RoundedPanel(
                         BOX_BG,
-                        14
+                        16
                 );
+
+        card.setBaseOutline(BAR_BG);
 
         card.setLayout(
                 new BorderLayout()
@@ -332,7 +433,7 @@ public class lauriceSettingsPanel extends JPanel {
                 new EmptyBorder(
                         14,
                         18,
-                        14,
+                        18,
                         18
                 )
         );
@@ -350,7 +451,7 @@ public class lauriceSettingsPanel extends JPanel {
                 BorderLayout.CENTER
         );
 
-        return fixed(card, 112);
+        return fixed(card, 132);
     }
 
     // =========================================================
@@ -628,6 +729,7 @@ public class lauriceSettingsPanel extends JPanel {
 
         private final Color color;
         private final int radius;
+        private Color baseOutline;
 
         RoundedPanel(
                 Color color,
@@ -638,6 +740,11 @@ public class lauriceSettingsPanel extends JPanel {
             this.radius = radius;
 
             setOpaque(false);
+        }
+
+        void setBaseOutline(Color c) {
+            this.baseOutline = c;
+            repaint();
         }
 
         @Override
@@ -653,16 +760,58 @@ public class lauriceSettingsPanel extends JPanel {
                     RenderingHints.VALUE_ANTIALIAS_ON
             );
 
+            int w = getWidth();
+            int h = getHeight() - 4;
+
+            for (int i = 0; i < 4; i++) {
+
+                g2.setColor(
+                        new Color(
+                                0x4A,
+                                0x0F,
+                                0x2A,
+                                10
+                        )
+                );
+
+                g2.fillRoundRect(
+                        2,
+                        i + 1,
+                        w - 4,
+                        h,
+                        radius * 2,
+                        radius * 2
+                );
+            }
+
             g2.setColor(color);
 
             g2.fillRoundRect(
                     0,
                     0,
-                    getWidth(),
-                    getHeight(),
+                    w,
+                    h,
                     radius * 2,
                     radius * 2
             );
+
+            if (baseOutline != null) {
+
+                g2.setColor(baseOutline);
+
+                g2.setStroke(
+                        new BasicStroke(1.2f)
+                );
+
+                g2.drawRoundRect(
+                        1,
+                        1,
+                        w - 3,
+                        h - 3,
+                        radius * 2,
+                        radius * 2
+                );
+            }
 
             g2.dispose();
 

@@ -269,7 +269,7 @@ public class MainFrame extends JFrame {
 
 
         contentPanel.add(
-                createSettingsPanel(),
+                new lauriceSettingsPanel(),
                 "settings"
         );
 

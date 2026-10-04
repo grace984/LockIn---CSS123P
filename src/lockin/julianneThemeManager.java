@@ -32,7 +32,7 @@ public final class julianneThemeManager {
 
     static {
 
-        // Theme 1
+// Theme 1
         addTheme(
                 "#59132C",
                 "#A42762",
@@ -44,108 +44,108 @@ public final class julianneThemeManager {
         addTheme(
                 "#0F2854",
                 "#1C4D8D",
-                "#4988C4",
-                "#31C8F6"
+                "#376DA2",
+                "#1E9EC5"
         );
 
         // Theme 3
         addTheme(
-                "#FFD400",
-                "#FFC300",
-                "#FF8C00",
-                "#FF5F00"
+                "#dbbb1a",
+                "#f2c73c",
+                "#D47400",
+                "#D14E00"
         );
 
         // Theme 4
         addTheme(
                 "#972828",
                 "#E45742",
-                "#EB7F31",
-                "#FCAD38"
+                "#C96320",
+                "#D98B20"
         );
 
         // Theme 5
         addTheme(
                 "#7C444F",
                 "#9F5255",
-                "#E16A54",
-                "#F39E60"
+                "#BD513D",
+                "#D07B3D"
         );
 
         // Theme 6
         addTheme(
-                "#F39E60",
+                "#C4773F",
                 "#8C5A3C",
-                "#C08552",
-                "#E4CAB0"
+                "#A06C3E",
+                "#BFAE9B"
         );
 
         // Theme 7
         addTheme(
                 "#35155D",
                 "#592D90",
-                "#4477CE",
-                "#8CABFF"
+                "#365FA8",
+                "#6286D4"
         );
 
         // Theme 8
         addTheme(
                 "#B7143C",
-                "#FF7888",
-                "#F1E9DF"
+                "#D65464",
+                "#C8BEB3"
         );
 
         // Theme 9
         addTheme(
-                "#789DBC",
-                "#9CC3A7",
-                "#FFE3E3"
+                "#5E7E98",
+                "#7C9D87",
+                "#D1B5B5"
         );
 
         // Theme 10
         addTheme(
-                "#8B96CA",
-                "#C7AEDA",
-                "#FCD8CD"
+                "#6C76A2",
+                "#A38BB4",
+                "#D2ADA3"
         );
 
         // Theme 11
         addTheme(
-                "#AEDEFC",
-                "#FFC1C1",
-                "#FF99C2"
+                "#83B2D4",
+                "#D49B9B",
+                "#D47398"
         );
 
         // Theme 12
         addTheme(
-                "#FFF5E4",
-                "#FFE3E1",
-                "#FFD1D1",
-                "#FF9494"
+                "#D2C5B4",
+                "#D2B8B6",
+                "#D2A8A8",
+                "#D46F6F"
         );
 
         // Theme 13
         addTheme(
                 "#84B179",
-                "#A2CB8B",
-                "#C7EABB",
-                "#E8F5BD"
+                "#8BAF76",
+                "#9EB793",
+                "#BDC997"
         );
 
         // Theme 14
         addTheme(
-                "#F08787",
-                "#FFC7A7",
-                "#FEE2AD",
-                "#F8FAB4"
+                "#D06B6B",
+                "#D4A388",
+                "#D0BE8C",
+                "#C8CC8C"
         );
 
         // Theme 15
         addTheme(
                 "#4682A9",
-                "#7BA9D6",
-                "#A6DFFB",
-                "#DEFCFF"
+                "#5D89B3",
+                "#80B3CC",
+                "#A9D1D4"
         );
 
         // Theme 16
@@ -153,7 +153,7 @@ public final class julianneThemeManager {
                 "#000000",
                 "#1F150C",
                 "#412D15",
-                "#E1DCC9"
+                "#BEB9A8"
         );
     }
 
