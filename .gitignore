@@ -1,3 +1,5 @@
+# .gitignore: files and folders git should skip (compiled output, editor settings, junk files)
+
 # Compiled class file
 *.class
 
