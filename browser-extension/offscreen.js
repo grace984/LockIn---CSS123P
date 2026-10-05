@@ -1,88 +1,194 @@
+let audioContext = null;
+let isPlaying = false;
+
+
+// ================================
+// RECEIVE SOUND REQUEST
+// ================================
+
 chrome.runtime.onMessage.addListener((message) => {
+
     if (message.action !== "playWarningSound") {
         return;
     }
 
-    const sound = message.sound === 1 ? 1 : 2;
+    const sound =
+        message.sound === 1
+            ? 1
+            : 2;
 
     playWarningSound(sound);
 });
 
 
-function playWarningSound(sound) {
-    try {
-        const AudioContextClass =
-            window.AudioContext ||
-            window.webkitAudioContext;
+// ================================
+// GET / CREATE AUDIO CONTEXT
+// ================================
 
-        if (!AudioContextClass) {
+async function getAudioContext() {
+
+    const AudioContextClass =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+        console.log(
+            "LockIn: AudioContext is not available."
+        );
+
+        return null;
+    }
+
+    if (!audioContext) {
+        audioContext =
+            new AudioContextClass();
+    }
+
+    if (audioContext.state === "suspended") {
+        try {
+            await audioContext.resume();
+        } catch (error) {
             console.log(
-                "LockIn: AudioContext is not available."
+                "LockIn audio resume error:",
+                error
             );
+
+            return null;
+        }
+    }
+
+    return audioContext;
+}
+
+
+// ================================
+// PLAY WARNING SOUND
+// ================================
+
+async function playWarningSound(sound) {
+
+    // Prevent overlapping warning sounds
+    if (isPlaying) {
+        console.log(
+            "LockIn: warning sound already playing."
+        );
+
+        return;
+    }
+
+    isPlaying = true;
+
+    try {
+
+        const context =
+            await getAudioContext();
+
+        if (!context) {
             return;
         }
 
-        const audioContext =
-            new AudioContextClass();
 
-        if (audioContext.state === "suspended") {
-            audioContext.resume();
-        }
+        // ================================
+        // SOUND 1
+        // ================================
 
-        playBeep(audioContext);
+        playBeep(context);
+
+
+        // ================================
+        // SOUND 2
+        // ================================
 
         if (sound === 2) {
-            setTimeout(() => {
-                playBeep(audioContext);
-            }, 250);
+
+            await wait(250);
+
+            playBeep(context);
         }
 
-        setTimeout(() => {
-            audioContext.close();
-        }, sound === 2 ? 600 : 350);
+
+        // Wait until the final beep finishes
+        await wait(250);
 
     } catch (error) {
+
         console.log(
             "LockIn offscreen audio error:",
             error
         );
+
+    } finally {
+
+        isPlaying = false;
     }
 }
 
 
+// ================================
+// PLAY ONE BEEP
+// ================================
+
 function playBeep(audioContext) {
+
     const oscillator =
         audioContext.createOscillator();
 
     const gainNode =
         audioContext.createGain();
 
+
     oscillator.type = "square";
+
 
     oscillator.frequency.setValueAtTime(
         1000,
         audioContext.currentTime
     );
 
+
     gainNode.gain.setValueAtTime(
         0.45,
         audioContext.currentTime
     );
+
 
     gainNode.gain.exponentialRampToValueAtTime(
         0.01,
         audioContext.currentTime + 0.18
     );
 
-    oscillator.connect(gainNode);
+
+    oscillator.connect(
+        gainNode
+    );
+
 
     gainNode.connect(
         audioContext.destination
     );
 
+
     oscillator.start();
+
 
     oscillator.stop(
         audioContext.currentTime + 0.18
     );
+}
+
+
+// ================================
+// WAIT
+// ================================
+
+function wait(milliseconds) {
+
+    return new Promise((resolve) => {
+
+        setTimeout(
+            resolve,
+            milliseconds
+        );
+
+    });
 }
