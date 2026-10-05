@@ -1,250 +1,361 @@
-const DEFAULT_MESSAGE = "This website is on your distraction list.";
-const CHECK_INTERVAL_MS = 2000;
+let restrictedSites = [];
+let warningShown = false;
+let warningOverlay = null;
+let currentSound = 2;
 
-let checkTimer = null;
+
+// ========================================
+// LOAD RESTRICTED SITES
+// ========================================
+
+async function loadRestrictedSites() {
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: "getRestrictedSites"
+        });
+
+        if (Array.isArray(response)) {
+            restrictedSites = response;
+        }
+    } catch (error) {
+        console.log(
+            "LockIn restricted sites error:",
+            error
+        );
+    }
+}
 
 
-/* ---------------------------------------------------------
-   SAFE MESSAGING
-   If the extension is reloaded while a page is open, the old
-   content script can no longer talk to it. This helper stops
-   the polling instead of throwing errors forever.
---------------------------------------------------------- */
-function askBackground(message, callback) {
+// ========================================
+// LOAD SELECTED SOUND
+// ========================================
+
+async function loadSelectedSound() {
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: "getSelectedSound"
+        });
+
+        if (response === 1 || response === 2) {
+            currentSound = response;
+        } else {
+            currentSound = 2;
+        }
+
+        console.log(
+            "LockIn selected sound:",
+            currentSound
+        );
+
+    } catch (error) {
+
+        console.log(
+            "LockIn sound error:",
+            error
+        );
+
+        currentSound = 2;
+    }
+}
+
+
+// ========================================
+// GET TIMER STATUS
+// ========================================
+
+async function getTimerStatus() {
+    try {
+
+        const response =
+            await chrome.runtime.sendMessage({
+                action: "getTimerStatus"
+            });
+
+        return response || {
+            active: false,
+            mode: "unknown"
+        };
+
+    } catch (error) {
+
+        console.log(
+            "LockIn timer error:",
+            error
+        );
+
+        return {
+            active: false,
+            mode: "unknown"
+        };
+    }
+}
+
+
+// ========================================
+// GET WARNING MESSAGE
+// ========================================
+
+async function getWarningMessage() {
+    try {
+
+        const response =
+            await chrome.runtime.sendMessage({
+                action: "getWarningMessage"
+            });
+
+        return response ||
+            "This website is on your distraction list.";
+
+    } catch (error) {
+
+        console.log(
+            "LockIn warning message error:",
+            error
+        );
+
+        return "This website is on your distraction list.";
+    }
+}
+
+
+// ========================================
+// PLAY WARNING SOUND
+// ========================================
+
+async function playWarningSound() {
+
+    console.log(
+        "LockIn requesting warning sound:",
+        currentSound
+    );
 
     try {
 
-        chrome.runtime.sendMessage(message, function (reply) {
-
-            if (chrome.runtime.lastError) {
-                console.log(
-                    "LockIn error (" + message.action + "):",
-                    chrome.runtime.lastError.message
-                );
-                callback(undefined);
-                return;
-            }
-
-            callback(reply);
+        await chrome.runtime.sendMessage({
+            action: "playWarningSound",
+            sound: currentSound
         });
 
     } catch (error) {
 
-        console.log("LockIn: extension reloaded, stopping checks.");
-
-        if (checkTimer) {
-            clearInterval(checkTimer);
-        }
+        console.log(
+            "LockIn warning sound request error:",
+            error
+        );
     }
 }
 
 
-/* ---------------------------------------------------------
-   STEP 1: IS THE WORK TIMER RUNNING?
---------------------------------------------------------- */
-function checkLockInStatus() {
+// ========================================
+// WARNING OVERLAY
+// ========================================
 
-    askBackground({ action: "getTimerStatus" }, function (timerStatus) {
+function showWarning(message) {
 
-        if (
-            !timerStatus ||
-            timerStatus.active !== true ||
-            timerStatus.mode !== "work"
-        ) {
-            removeWarning();
-            return;
-        }
-
-        checkRestrictedSite();
-    });
-}
-
-
-/* ---------------------------------------------------------
-   STEP 2: IS THIS SITE ON THE DISTRACTION LIST?
---------------------------------------------------------- */
-function checkRestrictedSite() {
-
-    askBackground({ action: "getRestrictedSites" }, function (restrictedSites) {
-
-        if (!Array.isArray(restrictedSites)) {
-            return;
-        }
-
-        const currentHostname =
-            window.location.hostname
-                .toLowerCase()
-                .replace(/^www\./, "");
-
-        if (!currentHostname) {
-            return;
-        }
-
-        const isRestricted = restrictedSites.some(function (site) {
-
-            const cleanSite =
-                String(site)
-                    .toLowerCase()
-                    .replace(/^www\./, "");
-
-            return (
-                currentHostname === cleanSite ||
-                currentHostname.endsWith("." + cleanSite)
-            );
-        });
-
-        if (!isRestricted) {
-            removeWarning();
-            return;
-        }
-
-        showWarning(currentHostname);
-    });
-}
-
-
-/* ---------------------------------------------------------
-   STEP 3: SHOW THE WARNING (OR REFRESH IT IF ALREADY SHOWN)
---------------------------------------------------------- */
-function showWarning(currentHostname) {
-
-    // Warning is already on screen: only refresh the message text,
-    // so a newly selected Version 1/2/3 shows up without a reload.
-    if (document.getElementById("lockin-warning")) {
-        updateWarningMessage();
+    if (warningShown) {
         return;
     }
 
-    const overlay = document.createElement("div");
-    overlay.id = "lockin-warning";
+    warningShown = true;
 
-    overlay.innerHTML = `
-        <div id="lockin-warning-box">
-            <div class="lockin-title">LockIn Warning</div>
-            <div class="lockin-message"></div>
-            <div class="lockin-site"></div>
-            <button id="lockin-close">Continue</button>
+    // Play sound when warning first appears
+    playWarningSound();
+
+    warningOverlay =
+        document.createElement("div");
+
+    warningOverlay.id =
+        "lockin-warning-overlay";
+
+    warningOverlay.style.position = "fixed";
+    warningOverlay.style.top = "0";
+    warningOverlay.style.left = "0";
+    warningOverlay.style.width = "100%";
+    warningOverlay.style.height = "100%";
+
+    warningOverlay.style.background =
+        "rgba(20, 20, 30, 0.96)";
+
+    warningOverlay.style.zIndex =
+        "2147483647";
+
+    warningOverlay.style.display =
+        "flex";
+
+    warningOverlay.style.flexDirection =
+        "column";
+
+    warningOverlay.style.justifyContent =
+        "center";
+
+    warningOverlay.style.alignItems =
+        "center";
+
+    warningOverlay.style.textAlign =
+        "center";
+
+    warningOverlay.style.fontFamily =
+        "Arial, sans-serif";
+
+
+    warningOverlay.innerHTML = `
+        <div style="
+            max-width: 600px;
+            padding: 40px;
+        ">
+
+            <div style="
+                font-size: 64px;
+                margin-bottom: 20px;
+            ">
+                ⚠️
+            </div>
+
+            <h1 style="
+                color: white;
+                font-size: 36px;
+                margin-bottom: 20px;
+            ">
+                Stay Focused!
+            </h1>
+
+            <p style="
+                color: #dddddd;
+                font-size: 20px;
+                line-height: 1.5;
+            ">
+                ${escapeHtml(message)}
+            </p>
+
+            <p style="
+                color: #aaaaaa;
+                font-size: 15px;
+                margin-top: 25px;
+            ">
+                This website is restricted during your Work session.
+            </p>
+
         </div>
     `;
 
-    // Set as text (not innerHTML) so nothing in the values can inject HTML.
-    overlay.querySelector(".lockin-message").textContent = DEFAULT_MESSAGE;
-    overlay.querySelector(".lockin-site").textContent = currentHostname;
 
-    const style = document.createElement("style");
-    style.id = "lockin-warning-style";
-
-    style.textContent = `
-        #lockin-warning {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.65);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2147483647;
-            font-family: Arial, sans-serif;
-        }
-
-        #lockin-warning-box {
-            background: white;
-            color: black;
-            width: 360px;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-        }
-
-        .lockin-title {
-            font-size: 26px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .lockin-message {
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-
-        .lockin-site {
-            font-size: 15px;
-            font-weight: bold;
-            margin-bottom: 25px;
-            word-break: break-word;
-        }
-
-        #lockin-close {
-            border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-        }
-
-        #lockin-close:hover {
-            opacity: 0.85;
-        }
-    `;
-
-    document.head.appendChild(style);
-    document.documentElement.appendChild(overlay);
-
-    overlay
-        .querySelector("#lockin-close")
-        .addEventListener("click", function () {
-            removeWarning();
-        });
-
-    updateWarningMessage();
+    document.body.appendChild(
+        warningOverlay
+    );
 }
 
 
-/* ---------------------------------------------------------
-   ASK THE BACKGROUND SCRIPT FOR THE SELECTED MESSAGE
-   Expected reply: a plain string, e.g. "Stay focused!"
---------------------------------------------------------- */
-function updateWarningMessage() {
+// ========================================
+// REMOVE WARNING
+// ========================================
 
-    askBackground({ action: "getWarningMessage" }, function (text) {
-
-        console.log("LockIn warning message reply:", text);
-
-        if (typeof text !== "string" || text.trim() === "") {
-            return;
-        }
-
-        const line = document.querySelector("#lockin-warning .lockin-message");
-
-        if (line && line.textContent !== text) {
-            line.textContent = text;
-        }
-    });
-}
-
-
-/* ---------------------------------------------------------
-   REMOVE THE WARNING
---------------------------------------------------------- */
 function removeWarning() {
 
-    const overlay = document.getElementById("lockin-warning");
+    if (warningOverlay) {
 
-    if (overlay) {
-        overlay.remove();
+        warningOverlay.remove();
+
+        warningOverlay = null;
     }
 
-    const style = document.getElementById("lockin-warning-style");
+    warningShown = false;
+}
 
-    if (style) {
-        style.remove();
+
+// ========================================
+// CHECK CURRENT WEBSITE
+// ========================================
+
+async function checkWebsite() {
+
+    await loadRestrictedSites();
+
+    await loadSelectedSound();
+
+
+    const timerStatus =
+        await getTimerStatus();
+
+
+    if (
+        !timerStatus.active ||
+        timerStatus.mode !== "work"
+    ) {
+
+        removeWarning();
+
+        return;
+    }
+
+
+    const hostname =
+        window.location.hostname
+            .replace(/^www\./, "")
+            .toLowerCase();
+
+
+    const isRestricted =
+        restrictedSites.some(
+            function (site) {
+
+                const cleanSite =
+                    String(site)
+                        .replace(/^www\./, "")
+                        .toLowerCase()
+                        .trim();
+
+
+                return (
+                    hostname === cleanSite ||
+                    hostname.endsWith(
+                        "." + cleanSite
+                    )
+                );
+            }
+        );
+
+
+    if (isRestricted) {
+
+        const message =
+            await getWarningMessage();
+
+        showWarning(message);
+
+    } else {
+
+        removeWarning();
     }
 }
 
 
-// CHECK IMMEDIATELY, THEN KEEP CHECKING
-checkLockInStatus();
-checkTimer = setInterval(checkLockInStatus, CHECK_INTERVAL_MS);
+// ========================================
+// ESCAPE HTML
+// ========================================
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+
+// ========================================
+// START
+// ========================================
+
+checkWebsite();
+
+
+setInterval(
+    function () {
+
+        checkWebsite();
+
+    },
+    2000
+);

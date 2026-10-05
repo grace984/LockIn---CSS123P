@@ -13,20 +13,12 @@ public class jhenicaApiServer {
     private String currentWebsite = "";
 
     private ramiraTrackerPanel trackerPanel;
-
-    /*
-     * Timer panel reference.
-     *
-     * This allows the API server to know
-     * whether the Work timer is currently running.
-     */
     private lauriceTimerPanel timerPanel;
 
     public jhenicaApiServer(
             ramiraTrackerPanel trackerPanel,
             lauriceTimerPanel timerPanel
     ) {
-
         this.trackerPanel = trackerPanel;
         this.timerPanel = timerPanel;
     }
@@ -38,40 +30,32 @@ public class jhenicaApiServer {
                 0
         );
 
-        /*
-         * Chrome sends the currently opened website here.
-         */
         server.createContext(
                 "/website",
                 this::handleWebsite
         );
 
-        /*
-         * Chrome gets the user's restricted sites here.
-         */
         server.createContext(
                 "/restricted",
                 this::handleRestricted
         );
 
-        /*
-         * Chrome checks whether Work timer is active here.
-         */
         server.createContext(
                 "/timer",
                 this::handleTimer
         );
 
-        /*
-         * Chrome gets the warning message chosen in Settings here.
-         */
         server.createContext(
                 "/message",
                 this::handleMessage
         );
 
-        server.setExecutor(null);
+        server.createContext(
+                "/sound",
+                this::handleSound
+        );
 
+        server.setExecutor(null);
         server.start();
 
         System.out.println(
@@ -79,11 +63,11 @@ public class jhenicaApiServer {
         );
     }
 
-    /*
-     * =========================================================
-     * WEBSITE ENDPOINT
-     * =========================================================
-     */
+    // =========================================================
+    // WEBSITE ENDPOINT
+    // =========================================================
+
+
 
     private void handleWebsite(
             HttpExchange exchange
@@ -91,70 +75,39 @@ public class jhenicaApiServer {
 
         addCorsHeaders(exchange);
 
-        if (
-                "OPTIONS".equalsIgnoreCase(
-                        exchange.getRequestMethod()
-                )
-        ) {
+        if ("OPTIONS".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
 
-            exchange.sendResponseHeaders(
-                    204,
-                    -1
-            );
-
+            exchange.sendResponseHeaders(204, -1);
             exchange.close();
-
             return;
         }
 
-        if (
-                "POST".equalsIgnoreCase(
-                        exchange.getRequestMethod()
-                )
-        ) {
+        if ("POST".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
 
             currentWebsite =
                     new String(
-                            exchange
-                                    .getRequestBody()
-                                    .readAllBytes(),
+                            exchange.getRequestBody().readAllBytes(),
                             StandardCharsets.UTF_8
                     ).trim();
 
             System.out.println(
-                    "Current website: "
-                            + currentWebsite
+                    "Current website: " + currentWebsite
             );
 
-            /*
-             * Restriction only applies when
-             * the Work timer is actively running.
-             */
             boolean workTimerActive =
                     timerPanel != null
-                            && timerPanel
-                            .isWorkTimerActive();
+                            && timerPanel.isWorkTimerActive();
 
-            /*
-             * First check if the website is
-             * actually on the user's distraction list.
-             */
             boolean restricted =
                     trackerPanel != null
                             && trackerPanel.isRestricted(
-                            currentWebsite
-                    );
+                                    currentWebsite
+                            );
 
-            /*
-             * Website is considered actively restricted
-             * ONLY when:
-             *
-             * 1. It is on the distraction list
-             * 2. Work timer is running
-             */
             boolean activeRestriction =
-                    restricted
-                            && workTimerActive;
+                    restricted && workTimerActive;
 
             if (activeRestriction) {
 
@@ -169,36 +122,22 @@ public class jhenicaApiServer {
                 );
             }
 
-            /*
-             * If the timer is not running,
-             * the website is allowed normally.
-             */
             String response =
                     activeRestriction
                             ? "restricted"
                             : "allowed";
 
-            sendResponse(
-                    exchange,
-                    response
-            );
-
+            sendResponse(exchange, response);
             return;
         }
 
-        exchange.sendResponseHeaders(
-                405,
-                -1
-        );
-
+        exchange.sendResponseHeaders(405, -1);
         exchange.close();
     }
 
-    /*
-     * =========================================================
-     * RESTRICTED SITES ENDPOINT
-     * =========================================================
-     */
+    // =========================================================
+    // RESTRICTED SITES ENDPOINT
+    // =========================================================
 
     private void handleRestricted(
             HttpExchange exchange
@@ -206,60 +145,36 @@ public class jhenicaApiServer {
 
         addCorsHeaders(exchange);
 
-        if (
-                "OPTIONS".equalsIgnoreCase(
-                        exchange.getRequestMethod()
-                )
-        ) {
+        if ("OPTIONS".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
 
-            exchange.sendResponseHeaders(
-                    204,
-                    -1
-            );
-
+            exchange.sendResponseHeaders(204, -1);
             exchange.close();
-
             return;
         }
 
-        if (
-                !"GET".equalsIgnoreCase(
-                        exchange.getRequestMethod()
-                )
-        ) {
+        if (!"GET".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
 
-            exchange.sendResponseHeaders(
-                    405,
-                    -1
-            );
-
+            exchange.sendResponseHeaders(405, -1);
             exchange.close();
-
             return;
         }
 
-        StringBuilder json =
-                new StringBuilder();
-
+        StringBuilder json = new StringBuilder();
         json.append("[");
 
         boolean first = true;
 
-        for (
-                String site :
-                ramiraTrackerPanel.restrictedSites
-        ) {
+        for (String site :
+                ramiraTrackerPanel.restrictedSites) {
 
             if (!first) {
                 json.append(",");
             }
 
             json.append("\"");
-
-            json.append(
-                    escapeJson(site)
-            );
-
+            json.append(escapeJson(site));
             json.append("\"");
 
             first = false;
@@ -273,24 +188,9 @@ public class jhenicaApiServer {
         );
     }
 
-    /*
-     * =========================================================
-     * TIMER STATUS ENDPOINT
-     * =========================================================
-     *
-     * Chrome can call:
-     *
-     * http://localhost:8080/timer
-     *
-     * Example response while Work timer is running:
-     *
-     * {"active":true,"mode":"work"}
-     *
-     * Example response during Break:
-     *
-     * {"active":false,"mode":"break"}
-     *
-     */
+    // =========================================================
+    // TIMER STATUS ENDPOINT
+    // =========================================================
 
     private void handleTimer(
             HttpExchange exchange
@@ -298,60 +198,35 @@ public class jhenicaApiServer {
 
         addCorsHeaders(exchange);
 
-        if (
-                "OPTIONS".equalsIgnoreCase(
-                        exchange.getRequestMethod()
-                )
-        ) {
+        if ("OPTIONS".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
 
-            exchange.sendResponseHeaders(
-                    204,
-                    -1
-            );
-
+            exchange.sendResponseHeaders(204, -1);
             exchange.close();
-
             return;
         }
 
-        if (
-                !"GET".equalsIgnoreCase(
-                        exchange.getRequestMethod()
-                )
-        ) {
+        if (!"GET".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
 
-            exchange.sendResponseHeaders(
-                    405,
-                    -1
-            );
-
+            exchange.sendResponseHeaders(405, -1);
             exchange.close();
-
             return;
         }
 
         boolean active = false;
-
         String mode = "none";
 
         if (timerPanel != null) {
 
-            /*
-             * TRUE only when Work timer
-             * is actually running.
-             */
             active =
                     timerPanel.isWorkTimerActive();
 
-            if (
-                    timerPanel.isWorkSession()
-            ) {
+            if (timerPanel.isWorkSession()) {
 
                 mode = "work";
 
-            } else if (
-                    timerPanel.isBreakSession()
-            ) {
+            } else if (timerPanel.isBreakSession()) {
 
                 mode = "break";
             }
@@ -373,18 +248,9 @@ public class jhenicaApiServer {
         );
     }
 
-    /*
-     * =========================================================
-     * WARNING MESSAGE ENDPOINT
-     * =========================================================
-     *
-     * Chrome can call:
-     *
-     * http://localhost:8080/message
-     *
-     * It returns the warning message the user picked
-     * in Settings, as plain text.
-     */
+    // =========================================================
+    // WARNING MESSAGE ENDPOINT
+    // =========================================================
 
     private void handleMessage(
             HttpExchange exchange
@@ -392,35 +258,19 @@ public class jhenicaApiServer {
 
         addCorsHeaders(exchange);
 
-        if (
-                "OPTIONS".equalsIgnoreCase(
-                        exchange.getRequestMethod()
-                )
-        ) {
+        if ("OPTIONS".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
 
-            exchange.sendResponseHeaders(
-                    204,
-                    -1
-            );
-
+            exchange.sendResponseHeaders(204, -1);
             exchange.close();
-
             return;
         }
 
-        if (
-                !"GET".equalsIgnoreCase(
-                        exchange.getRequestMethod()
-                )
-        ) {
+        if (!"GET".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
 
-            exchange.sendResponseHeaders(
-                    405,
-                    -1
-            );
-
+            exchange.sendResponseHeaders(405, -1);
             exchange.close();
-
             return;
         }
 
@@ -430,11 +280,49 @@ public class jhenicaApiServer {
         );
     }
 
-    /*
-     * =========================================================
-     * CORS
-     * =========================================================
-     */
+    // =========================================================
+    // SELECTED SOUND ENDPOINT
+    // =========================================================
+
+    private void handleSound(
+            HttpExchange exchange
+    ) throws IOException {
+
+        addCorsHeaders(exchange);
+
+        if ("OPTIONS".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
+
+            exchange.sendResponseHeaders(204, -1);
+            exchange.close();
+            return;
+        }
+
+        if (!"GET".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
+
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+            return;
+        }
+
+        int selectedSound =
+                lauriceSettingsPanel
+                        .getSavedSoundPreference();
+
+        if (selectedSound != 1 && selectedSound != 2) {
+            selectedSound = 2;
+        }
+
+        sendResponse(
+                exchange,
+                String.valueOf(selectedSound)
+        );
+    }
+
+    // =========================================================
+    // CORS
+    // =========================================================
 
     private void addCorsHeaders(
             HttpExchange exchange
@@ -456,11 +344,9 @@ public class jhenicaApiServer {
         );
     }
 
-    /*
-     * =========================================================
-     * SEND RESPONSE
-     * =========================================================
-     */
+    // =========================================================
+    // SEND RESPONSE
+    // =========================================================
 
     private void sendResponse(
             HttpExchange exchange,
@@ -481,53 +367,38 @@ public class jhenicaApiServer {
                 OutputStream output =
                         exchange.getResponseBody()
         ) {
-
             output.write(data);
         }
     }
 
-    /*
-     * =========================================================
-     * JSON ESCAPE
-     * =========================================================
-     */
+    // =========================================================
+    // JSON ESCAPE
+    // =========================================================
 
     private String escapeJson(
             String text
     ) {
 
         return text
-                .replace(
-                        "\\",
-                        "\\\\"
-                )
-                .replace(
-                        "\"",
-                        "\\\""
-                );
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
     }
 
-    /*
-     * =========================================================
-     * GET CURRENT WEBSITE
-     * =========================================================
-     */
+    // =========================================================
+    // GET CURRENT WEBSITE
+    // =========================================================
 
     public String getCurrentWebsite() {
-
         return currentWebsite;
     }
 
-    /*
-     * =========================================================
-     * STOP SERVER
-     * =========================================================
-     */
+    // =========================================================
+    // STOP SERVER
+    // =========================================================
 
     public void stop() {
 
         if (server != null) {
-
             server.stop(0);
         }
     }
