@@ -216,21 +216,14 @@ function showWarning(message) {
                 font-size: 36px;
                 margin-bottom: 20px;
             ">
-                Stay Focused!
+                ${escapeHtml(message)}
             </h1>
 
             <p style="
-                color: #dddddd;
+                color: #aaaaaa;
                 font-size: 20px;
                 line-height: 1.5;
-            ">
-                ${escapeHtml(message)}
-            </p>
-
-            <p style="
-                color: #aaaaaa;
-                font-size: 15px;
-                margin-top: 25px;
+                margin-top: 0;
             ">
                 This website is restricted during your Work session.
             </p>
