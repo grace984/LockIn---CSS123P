@@ -285,6 +285,21 @@ public class MainFrame extends JFrame {
         JPanel columns =
                 new JPanel(null) {
 
+                    /*
+                     * FIX: the tabs (276px wide) overlap the content panel
+                     * (which starts at 238px). Swing normally assumes that
+                     * children of a panel do not overlap, so when a panel
+                     * like Themes repainted (hover / checkmark animation),
+                     * it painted over the tab's rounded end.
+                     *
+                     * Returning false makes Swing repaint overlapping
+                     * children in the correct order.
+                     */
+                    @Override
+                    public boolean isOptimizedDrawingEnabled() {
+                        return false;
+                    }
+
                     @Override
                     public void doLayout() {
 
@@ -933,13 +948,13 @@ public class MainFrame extends JFrame {
         );
 
 
-JPanel warningSettings =
-        settingsGroup(
-                "Tracker Warning Message",
-                ramiraTrackerPanel.getWarningMessages(),   // was new String[]{"Version 1", ...}
-                ramiraTrackerPanel.getWarningVersion(),
-                ramiraTrackerPanel::setWarningVersion
-        );
+        JPanel warningSettings =
+                settingsGroup(
+                        "Tracker Warning Message",
+                        ramiraTrackerPanel.getWarningMessages(),   // was new String[]{"Version 1", ...}
+                        ramiraTrackerPanel.getWarningVersion(),
+                        ramiraTrackerPanel::setWarningVersion
+                );
 
 
         warningSettings.setBounds(
