@@ -95,17 +95,8 @@ public class lauriceTimerPanel extends JPanel {
     private void createLayout() {
         setLayout(new BorderLayout());
 
-        setPreferredSize(
-                new Dimension(638, 520)
-        );
-
-        setMinimumSize(
-                new Dimension(638, 520)
-        );
-
-        setMaximumSize(
-                new Dimension(638, 520)
-        );
+        setPreferredSize(new Dimension(638, 520));
+        setMinimumSize(new Dimension(420, 420));
 
         setOpaque(false);
 
@@ -176,6 +167,21 @@ public class lauriceTimerPanel extends JPanel {
                 content,
                 BorderLayout.CENTER
         );
+
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                scaleTimerText();
+            }
+        });
+    }
+
+    // shrinks or grows the big "25:00" to fit the card (186 is the original size)
+    private void scaleTimerText() {
+        float byWidth = (getWidth() - 80) / 2.4f;
+        float byHeight = (getHeight() - 313) / 1.15f;
+        float size = Math.max(48f, Math.min(186f, Math.min(byWidth, byHeight)));
+        timerLabel.setFont(timerLabel.getFont().deriveFont(size));
     }
 
     private void createTimer() {

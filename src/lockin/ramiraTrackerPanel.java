@@ -232,9 +232,9 @@ public class ramiraTrackerPanel extends JPanel {
         add(Box.createVerticalGlue());
 
 
+        loadSites();    // brings back the sites saved last time
         refreshLists(); // shows the empty-state hints from the start
     }
-
 
     // ---------- building the screen ----------
 
@@ -432,6 +432,7 @@ public class ramiraTrackerPanel extends JPanel {
         action.addActionListener(e -> {
             if (restricted) {
                 restrictedSites.remove(site);
+                    saveSites();
             } else {
                 trackedSites.remove(site);
             }
@@ -481,6 +482,7 @@ public class ramiraTrackerPanel extends JPanel {
             return;
         }
         restrictedSites.add(site);
+            saveSites();
         input.setText("");
         refreshLists();
     }
@@ -526,6 +528,37 @@ public class ramiraTrackerPanel extends JPanel {
         trackedPanel.repaint();
     }
 
+    // saved in the user's home folder, so it never gets committed to git
+private static final java.nio.file.Path SAVE_FILE =
+        java.nio.file.Paths.get(System.getProperty("user.home"), ".lockin", "restricted-sites.txt");
+
+private void saveSites() {
+    try {
+        java.nio.file.Files.createDirectories(SAVE_FILE.getParent());
+        java.nio.file.Files.write(SAVE_FILE, restrictedSites,
+                java.nio.charset.StandardCharsets.UTF_8);
+    } catch (java.io.IOException e) {
+        e.printStackTrace();
+    }
+}
+
+private void loadSites() {
+    try {
+        if (java.nio.file.Files.exists(SAVE_FILE)) {
+            for (String line : java.nio.file.Files.readAllLines(SAVE_FILE,
+                    java.nio.charset.StandardCharsets.UTF_8)) {
+                String site = clean(line);
+                if (!site.isEmpty() && !restrictedSites.contains(site)) {
+                    restrictedSites.add(site);
+                        saveSites();
+                }
+            }
+            refreshLists();
+        }
+    } catch (java.io.IOException e) {
+        e.printStackTrace();
+    }
+}
 
     // Jhenica's server and the warning call this.
     // youtube.com is restricted -> m.youtube.com is too

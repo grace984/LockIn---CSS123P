@@ -394,6 +394,13 @@ public class MainFrame extends JFrame {
 
         pack();
 
+        // Windows applies the minimum in real screen pixels, but the layout is scaled
+                // by the display scaling (125%, 150%...), so multiply by that scale.
+                double scale = getGraphicsConfiguration().getDefaultTransform().getScaleX();
+                setMinimumSize(new Dimension(
+                        (int) Math.round(1150 * scale),   // drawer (709) + timer card (420) + borders
+                        (int) Math.round(600 * scale)));
+
         setLocationRelativeTo(null);
 
 
