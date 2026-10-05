@@ -191,7 +191,7 @@ public class ramiraTrackerPanel extends JPanel {
 
         // title, centered (Newsreader)
         JLabel title = new JLabel("Distraction Sites", SwingConstants.CENTER);
-        title.setFont(spaced(header(32), 0.04f));
+        title.setFont(spaced(body(Font.BOLD, 32), 0.04f));
         title.setForeground(TITLE);
         add(col(title, 42));
         add(Box.createVerticalStrut(4));
