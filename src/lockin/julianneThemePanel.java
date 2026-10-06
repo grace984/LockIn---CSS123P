@@ -97,6 +97,7 @@ public class julianneThemePanel extends JPanel
     // CONSTRUCTOR
     // =========================================================
 
+    // Builds the Themes page and its 4-by-4 theme grid.
     public julianneThemePanel() {
 
         setBackground(
@@ -286,6 +287,7 @@ public class julianneThemePanel extends JPanel
     // RESET BUTTON
     // =========================================================
 
+    // Creates the control that restores the default theme.
     private JButton createResetButton() {
 
         JButton button =
@@ -337,6 +339,7 @@ public class julianneThemePanel extends JPanel
     // =========================================================
 
     @Override
+    // Refreshes the selected checkmark when the theme changes.
     public void themeChanged(
             Color[] colors
     ) {

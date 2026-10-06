@@ -56,6 +56,7 @@ public class lauriceSettingsPanel extends JPanel {
     private OptionButton[] soundButtons;
     private OptionButton[] warningButtons;
 
+    // Builds the Settings page and connects its controls.
     public lauriceSettingsPanel() {
         createComponents();
         createLayout();
@@ -65,6 +66,7 @@ public class lauriceSettingsPanel extends JPanel {
     // COMPONENTS
     // =========================================================
 
+    // Creates the sound and warning-message choices.
     private void createComponents() {
 
         // TIMER SOUND
@@ -144,6 +146,7 @@ public class lauriceSettingsPanel extends JPanel {
     // SOUND SETTINGS
     // =========================================================
 
+    // Loads the saved sound choice from local preferences.
     private int getSavedSound() {
 
         int sound = SETTINGS.getInt(
@@ -158,6 +161,7 @@ public class lauriceSettingsPanel extends JPanel {
         return sound;
     }
 
+    // Saves the selected sound choice locally.
     private void saveSelectedSound(int sound) {
 
         if (sound == 1 || sound == 2) {
@@ -174,6 +178,7 @@ public class lauriceSettingsPanel extends JPanel {
     // Used by jhenicaApiServer
     // =========================================================
 
+    // Lets the API read the saved sound choice.
     public static int getSavedSoundPreference() {
 
         return SETTINGS.getInt(
@@ -186,6 +191,7 @@ public class lauriceSettingsPanel extends JPanel {
     // LAYOUT
     // =========================================================
 
+    // Arranges the Settings sections vertically.
     private void createLayout() {
 
         setBackground(PANEL_BACKGROUND);
@@ -504,6 +510,7 @@ public class lauriceSettingsPanel extends JPanel {
     // WHAT THE REST OF THE APP READS
     // =========================================================
 
+    // Returns the sound option selected in the UI.
     public int getSelectedSound() {
 
         for (
@@ -523,6 +530,7 @@ public class lauriceSettingsPanel extends JPanel {
         return getSavedSound();
     }
 
+    // Returns the selected warning-message option.
     public int getWarningVersion() {
 
         for (
