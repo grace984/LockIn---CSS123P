@@ -1,46 +1,71 @@
 package lockin;
 
+// Swing components: JPanel, JLabel, buttons, and the Swing Timer
 import javax.swing.*;
+// AWT classes for colors, fonts, layouts, and drawing
 import java.awt.*;
 
+// The timer screen: Work/Break buttons, the countdown, and Start/Pause/Reset controls
 public class lauriceTimerPanel extends JPanel {
 
+    // Cream color used for the text and button fills
     private static final Color CREAM = new Color(0xFFF0D8);
+    // Brown color used for text on cream buttons
     private static final Color BROWN = new Color(0x5C3A12);
 
+    // Length of a Work session, in seconds (25 minutes)
     private int workDuration = 25 * 60;
+    // Length of a Break session, in seconds (5 minutes)
     private int breakDuration = 5 * 60;
+    // Seconds remaining in the current session
     private int timeLeft = workDuration;
 
+    // True when the current session is Work, false when it is Break
     private boolean workSession = true;
+    // True once the user has pressed Start (decides which buttons to show)
     private boolean hasStarted = false;
 
+    // The big countdown text (like 25:00)
     private JLabel timerLabel;
 
+    // Control buttons shown depending on the timer state
     private JButton startButton;
     private JButton pauseButton;
     private JButton resumeButton;
     private JButton resetButton;
 
+    // Work and Break toggle buttons at the top of the card
     private JToggleButton workButton;
     private JToggleButton breakButton;
+    // Makes sure only one of Work/Break is selected at a time
     private ButtonGroup sessionButtons;
 
+    // Holds the Start / Pause / Reset buttons
     private JPanel controlPanel;
 
+    // Swing Timer that ticks once per second
     private Timer timer;
 
+    // Builds the whole panel in order
     public lauriceTimerPanel() {
+        // Create the buttons and label
         createComponents();
+        // Arrange them on the card
         createLayout();
+        // Set up the one-second countdown
         createTimer();
+        // Connect the buttons to their actions
         createButtonActions();
+        // Show the starting time and buttons
         updateDisplay();
     }
 
+    // Creates the label and buttons (no layout yet)
     private void createComponents() {
+        // Countdown label starts at 25:00
         timerLabel = new JLabel("25:00");
 
+        // Big bold serif font for the countdown
         timerLabel.setFont(
                 new Font(
                         "Times New Roman",
@@ -49,30 +74,39 @@ public class lauriceTimerPanel extends JPanel {
                 )
         );
 
+        // Center the text inside the label
         timerLabel.setHorizontalAlignment(
                 SwingConstants.CENTER
         );
 
+        // Cream text color
         timerLabel.setForeground(CREAM);
+        // Center the label inside the vertical box layout
         timerLabel.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
 
+        // Work and Break buttons with their widths
         workButton = new ModeButton("Work", 144);
         breakButton = new ModeButton("Break", 142);
 
+        // Work is selected when the app opens
         workButton.setSelected(true);
 
+        // Group them so selecting one deselects the other
         sessionButtons = new ButtonGroup();
         sessionButtons.add(workButton);
         sessionButtons.add(breakButton);
 
+        // Big Start button
         startButton = new StartButton("Start");
 
+        // Round icon buttons (the type picks which icon is drawn)
         pauseButton = new IconButton("pause");
         resumeButton = new IconButton("play");
         resetButton = new IconButton("reset");
 
+        // Row that holds the control buttons, centered with 10px gaps
         controlPanel = new JPanel(
                 new FlowLayout(
                         FlowLayout.CENTER,
@@ -81,29 +115,37 @@ public class lauriceTimerPanel extends JPanel {
                 )
         );
 
+        // Transparent so the card shows through
         controlPanel.setOpaque(false);
 
+        // Clicking Work switches to a Work session
         workButton.addActionListener(
                 e -> selectSession(true)
         );
 
+        // Clicking Break switches to a Break session
         breakButton.addActionListener(
                 e -> selectSession(false)
         );
     }
 
+    // Arranges the components on the card
     private void createLayout() {
         setLayout(new BorderLayout());
 
+        // Ideal card size, and the smallest it may shrink to
         setPreferredSize(new Dimension(638, 520));
         setMinimumSize(new Dimension(420, 420));
 
+        // Transparent so the gradient behind shows (the card is drawn in paintComponent)
         setOpaque(false);
 
+        // Inner panel that stacks everything top to bottom
         JPanel content = new JPanel();
 
         content.setOpaque(false);
 
+        // Stack children vertically
         content.setLayout(
                 new BoxLayout(
                         content,
@@ -111,6 +153,7 @@ public class lauriceTimerPanel extends JPanel {
                 )
         );
 
+        // Padding: 75 top, 70 bottom
         content.setBorder(
                 BorderFactory.createEmptyBorder(
                         75,
@@ -120,6 +163,7 @@ public class lauriceTimerPanel extends JPanel {
                 )
         );
 
+        // Row holding the Work and Break buttons, 40px apart
         JPanel modeRow = new JPanel(
                 new FlowLayout(
                         FlowLayout.CENTER,
@@ -133,41 +177,49 @@ public class lauriceTimerPanel extends JPanel {
         modeRow.add(workButton);
         modeRow.add(breakButton);
 
+        // Flexible space at the top, so the content sits in the middle
         content.add(
                 Box.createVerticalGlue()
         );
 
+        // Center the Work/Break row horizontally
         modeRow.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
 
         content.add(modeRow);
 
+        // Gap between the buttons and the countdown
         content.add(
                 Box.createVerticalStrut(38)
         );
 
         content.add(timerLabel);
 
+        // Gap between the countdown and the controls
         content.add(
                 Box.createVerticalStrut(28)
         );
 
+        // Center the control buttons horizontally
         controlPanel.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
 
         content.add(controlPanel);
 
+        // Flexible space at the bottom
         content.add(
                 Box.createVerticalGlue()
         );
 
+        // Put the stacked content in the middle of the card
         add(
                 content,
                 BorderLayout.CENTER
         );
 
+        // Rescale the countdown text whenever the card is resized
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
@@ -176,26 +228,32 @@ public class lauriceTimerPanel extends JPanel {
         });
     }
 
-    // shrinks or grows the big "25:00" to fit the card (186 is the original size)
+    // Resizes the countdown font to fit the card (186 is the full size)
     private void scaleTimerText() {
+        // Largest size that fits the width
         float byWidth = (getWidth() - 80) / 2.4f;
+        // Largest size that fits the height
         float byHeight = (getHeight() - 313) / 1.15f;
+        // Use the smaller fit, kept between 48 and 186
         float size = Math.max(48f, Math.min(186f, Math.min(byWidth, byHeight)));
         timerLabel.setFont(timerLabel.getFont().deriveFont(size));
     }
 
+    // Creates the timer that fires every 1000 ms
     private void createTimer() {
 
         timer = new Timer(
                 1000,
                 e -> {
 
+                    // Time left: count down one second
                     if (timeLeft > 0) {
 
                         timeLeft--;
 
                         updateDisplay();
 
+                    // Time is up: move to the next session
                     } else {
 
                         switchSession();
@@ -204,8 +262,10 @@ public class lauriceTimerPanel extends JPanel {
         );
     }
 
+    // Connects each control button to its action
     private void createButtonActions() {
 
+        // Start: mark as started and begin counting
         startButton.addActionListener(
                 e -> {
 
@@ -215,35 +275,43 @@ public class lauriceTimerPanel extends JPanel {
                 }
         );
 
+        // Pause: stop counting
         pauseButton.addActionListener(
                 e -> pauseTimer()
         );
 
+        // Resume: keep counting from where it stopped
         resumeButton.addActionListener(
                 e -> startTimer()
         );
 
+        // Reset: go back to a fresh Work session
         resetButton.addActionListener(
                 e -> resetTimer()
         );
     }
 
+    // Starts (or resumes) the countdown
     public void startTimer() {
 
         timer.start();
 
         hasStarted = true;
 
+        // Refresh the buttons (shows Pause and Reset)
         updateDisplay();
     }
 
+    // Stops the countdown but keeps the time left
     public void pauseTimer() {
 
         timer.stop();
 
+        // Refresh the buttons (shows Resume and Reset)
         updateDisplay();
     }
 
+    // Stops the timer and goes back to a full Work session
     public void resetTimer() {
 
         timer.stop();
@@ -254,16 +322,19 @@ public class lauriceTimerPanel extends JPanel {
 
         hasStarted = false;
 
+        // Highlight the Work button again
         workButton.setSelected(true);
 
         updateDisplay();
     }
 
+    // Jumps straight to the next session
     public void skipSession() {
 
         switchSession();
     }
 
+    // Returns the time left as text like "12:31" (used by the warning popup)
     public String getRemainingText() {
 
         int minutes =
@@ -272,6 +343,7 @@ public class lauriceTimerPanel extends JPanel {
         int seconds =
                 timeLeft % 60;
 
+        // %02d pads with zeros: 5 becomes 05
         return String.format(
                 "%02d:%02d",
                 minutes,
@@ -279,25 +351,30 @@ public class lauriceTimerPanel extends JPanel {
         );
     }
 
+    // Short alias for pauseTimer (can be called from other classes)
     public void pause() {
 
         pauseTimer();
     }
 
+    // Short alias for startTimer (can be called from other classes)
     public void resume() {
 
         startTimer();
     }
 
+    // Short alias for resetTimer (can be called from other classes)
     public void reset() {
 
         resetTimer();
     }
 
+    // Swaps Work for Break (or Break for Work) and waits for Start
     private void switchSession() {
 
         timer.stop();
 
+        // Work just ended: move to Break
         if (workSession) {
 
             workSession = false;
@@ -306,6 +383,7 @@ public class lauriceTimerPanel extends JPanel {
 
             breakButton.setSelected(true);
 
+        // Break just ended: move to Work
         } else {
 
             workSession = true;
@@ -315,11 +393,13 @@ public class lauriceTimerPanel extends JPanel {
             workButton.setSelected(true);
         }
 
+        // The next session waits for the user to press Start
         hasStarted = false;
 
         updateDisplay();
     }
 
+    // Refreshes the countdown text and picks which buttons to show
     private void updateDisplay() {
 
         int minutes =
@@ -328,6 +408,7 @@ public class lauriceTimerPanel extends JPanel {
         int seconds =
                 timeLeft % 60;
 
+        // Show the time as MM:SS
         timerLabel.setText(
                 String.format(
                         "%02d:%02d",
@@ -336,14 +417,17 @@ public class lauriceTimerPanel extends JPanel {
                 )
         );
 
+        // Clear the old buttons before adding the right ones
         controlPanel.removeAll();
 
+        // Not started yet: show only Start
         if (!hasStarted) {
 
             controlPanel.add(
                     startButton
             );
 
+        // Running: show Pause and Reset
         } else if (timer.isRunning()) {
 
             controlPanel.add(
@@ -354,6 +438,7 @@ public class lauriceTimerPanel extends JPanel {
                     resetButton
             );
 
+        // Started but paused: show Resume and Reset
         } else {
 
             controlPanel.add(
@@ -365,14 +450,17 @@ public class lauriceTimerPanel extends JPanel {
             );
         }
 
+        // Redraw the button row
         controlPanel.revalidate();
         controlPanel.repaint();
     }
 
+    // Switches to Work or Break when its toggle button is clicked
     private void selectSession(
             boolean work
     ) {
 
+        // Stop any running countdown first
         if (timer.isRunning()) {
 
             timer.stop();
@@ -382,6 +470,7 @@ public class lauriceTimerPanel extends JPanel {
 
         workSession = work;
 
+        // Load the full length of the chosen session
         timeLeft =
                 work
                         ? workDuration
@@ -393,37 +482,33 @@ public class lauriceTimerPanel extends JPanel {
     /*
      * =========================================================
      * TIMER STATUS METHODS
+     * Other classes (like the API server) use these to read the timer.
      * =========================================================
      */
 
+    // True when the current session is Work
     public boolean isWorkSession() {
 
         return workSession;
     }
 
+    // True when the current session is Break
     public boolean isBreakSession() {
 
         return !workSession;
     }
 
+    // True while the countdown is ticking
     public boolean isTimerRunning() {
 
         return timer.isRunning();
     }
 
     /*
-     * THIS METHOD IS USED BY THE API SERVER.
+     * Used by the API server to decide if a restricted site should be flagged.
      *
-     * TRUE ONLY WHEN:
-     * 1. Current session is Work
-     * 2. Timer is actually running
-     *
-     * FALSE WHEN:
-     * - Work timer is not started
-     * - Work timer is paused
-     * - Work timer is reset
-     * - Break session
-     * - Break timer is running
+     * TRUE only when the session is Work AND the timer is running.
+     * FALSE when stopped, paused, reset, or in Break.
      */
     public boolean isWorkTimerActive() {
 
@@ -431,21 +516,25 @@ public class lauriceTimerPanel extends JPanel {
                 && timer.isRunning();
     }
 
+    // Seconds left in the current session
     public int getTimeLeft() {
 
         return timeLeft;
     }
 
+    // Current Work length in seconds
     public int getWorkDuration() {
 
         return workDuration;
     }
 
+    // Current Break length in seconds
     public int getBreakDuration() {
 
         return breakDuration;
     }
 
+    // Sets a new Work length (minimum 60 seconds)
     public void setWorkDuration(
             int seconds
     ) {
@@ -456,6 +545,7 @@ public class lauriceTimerPanel extends JPanel {
                         seconds
                 );
 
+        // If Work is showing and not running, show the new length right away
         if (
                 workSession
                         && !timer.isRunning()
@@ -469,6 +559,7 @@ public class lauriceTimerPanel extends JPanel {
         }
     }
 
+    // Sets a new Break length (minimum 60 seconds)
     public void setBreakDuration(
             int seconds
     ) {
@@ -479,6 +570,7 @@ public class lauriceTimerPanel extends JPanel {
                         seconds
                 );
 
+        // If Break is showing and not running, show the new length right away
         if (
                 !workSession
                         && !timer.isRunning()
@@ -492,6 +584,7 @@ public class lauriceTimerPanel extends JPanel {
         }
     }
 
+    // Draws the translucent rounded card behind the timer
     @Override
     protected void paintComponent(
             Graphics g
@@ -499,14 +592,17 @@ public class lauriceTimerPanel extends JPanel {
 
         super.paintComponent(g);
 
+        // Copy of the graphics so our changes don't leak out
         Graphics2D g2 =
                 (Graphics2D) g.create();
 
+        // Smooth edges
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON
         );
 
+        // Cream with a low alpha (0x1C) so it looks see-through
         g2.setColor(
                 new Color(
                         0xFFF5E4
@@ -515,6 +611,7 @@ public class lauriceTimerPanel extends JPanel {
                 )
         );
 
+        // Fill the whole card with large rounded corners
         g2.fillRoundRect(
                 0,
                 0,
@@ -527,6 +624,7 @@ public class lauriceTimerPanel extends JPanel {
         g2.dispose();
     }
 
+    // Pill-shaped Work/Break toggle button
     private static class ModeButton
             extends JToggleButton {
 
@@ -537,6 +635,7 @@ public class lauriceTimerPanel extends JPanel {
 
             super(label);
 
+            // Bold serif label
             setFont(
                     new Font(
                             "Times New Roman",
@@ -545,6 +644,7 @@ public class lauriceTimerPanel extends JPanel {
                     )
             );
 
+            // Lock the button to a fixed size
             Dimension size =
                     new Dimension(
                             width,
@@ -555,12 +655,14 @@ public class lauriceTimerPanel extends JPanel {
             setMinimumSize(size);
             setMaximumSize(size);
 
+            // Turn off the default look, since we draw it ourselves
             setBorderPainted(false);
             setContentAreaFilled(false);
             setFocusPainted(false);
             setOpaque(false);
         }
 
+        // Custom drawing: filled pill when selected, outline when not
         @Override
         protected void paintComponent(
                 Graphics g
@@ -569,20 +671,25 @@ public class lauriceTimerPanel extends JPanel {
             Graphics2D g2 =
                     (Graphics2D) g.create();
 
+            // Smooth edges
             g2.setRenderingHint(
                     RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON
             );
 
+            // Is this button the selected one?
             boolean active =
                     isSelected();
 
+            // Keeps the outline inside the button's edge
             int inset = 1;
 
+            // Arc equal to the height makes fully round ends
             int arc =
                     getHeight()
                             - inset * 2;
 
+            // Selected: solid cream pill
             if (active) {
 
                 g2.setColor(CREAM);
@@ -598,6 +705,7 @@ public class lauriceTimerPanel extends JPanel {
                         arc
                 );
 
+            // Not selected: cream outline only
             } else {
 
                 g2.setColor(CREAM);
@@ -620,6 +728,7 @@ public class lauriceTimerPanel extends JPanel {
 
             g2.setFont(getFont());
 
+            // Brown text on the filled pill, cream text on the outline
             g2.setColor(
                     active
                             ? BROWN
@@ -629,6 +738,7 @@ public class lauriceTimerPanel extends JPanel {
             FontMetrics fm =
                     g2.getFontMetrics();
 
+            // x: center the text horizontally
             int x =
                     (
                             getWidth()
@@ -637,6 +747,7 @@ public class lauriceTimerPanel extends JPanel {
                             )
                     ) / 2;
 
+            // y: center the text vertically (baseline position)
             int y =
                     (
                             getHeight()
@@ -654,6 +765,7 @@ public class lauriceTimerPanel extends JPanel {
         }
     }
 
+    // Big cream "Start" button
     private static class StartButton
             extends JButton {
 
@@ -661,6 +773,7 @@ public class lauriceTimerPanel extends JPanel {
 
             super(text);
 
+            // Large bold serif text
             setFont(
                     new Font(
                             "Times New Roman",
@@ -671,6 +784,7 @@ public class lauriceTimerPanel extends JPanel {
 
             setForeground(BROWN);
 
+            // Lock the button to 174 x 56
             setPreferredSize(
                     new Dimension(
                             174,
@@ -692,12 +806,14 @@ public class lauriceTimerPanel extends JPanel {
                     )
             );
 
+            // Turn off the default look, since we draw it ourselves
             setBorderPainted(false);
             setContentAreaFilled(false);
             setFocusPainted(false);
             setOpaque(false);
         }
 
+        // Custom drawing: a cream pill with centered brown text
         @Override
         protected void paintComponent(
                 Graphics g
@@ -706,6 +822,7 @@ public class lauriceTimerPanel extends JPanel {
             Graphics2D g2 =
                     (Graphics2D) g.create();
 
+            // Smooth edges
             g2.setRenderingHint(
                     RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON
@@ -713,6 +830,7 @@ public class lauriceTimerPanel extends JPanel {
 
             g2.setColor(CREAM);
 
+            // Pill shape: arc equals the height
             g2.fillRoundRect(
                     0,
                     0,
@@ -729,6 +847,7 @@ public class lauriceTimerPanel extends JPanel {
             FontMetrics fm =
                     g2.getFontMetrics();
 
+            // x: center the text horizontally
             int x =
                     (
                             getWidth()
@@ -737,6 +856,7 @@ public class lauriceTimerPanel extends JPanel {
                             )
                     ) / 2;
 
+            // y: center the text vertically (baseline position)
             int y =
                     (
                             getHeight()
@@ -754,15 +874,18 @@ public class lauriceTimerPanel extends JPanel {
         }
     }
 
+    // Round cream button that draws a pause, play, or reset icon
     private static class IconButton
             extends JButton {
 
+        // Which icon to draw: "pause", "play", or "reset"
         private final String type;
 
         IconButton(String type) {
 
             this.type = type;
 
+            // Lock the button to 58 x 56
             setPreferredSize(
                     new Dimension(
                             58,
@@ -784,12 +907,14 @@ public class lauriceTimerPanel extends JPanel {
                     )
             );
 
+            // Turn off the default look, since we draw it ourselves
             setBorderPainted(false);
             setContentAreaFilled(false);
             setFocusPainted(false);
             setOpaque(false);
         }
 
+        // Custom drawing: a cream circle with the chosen icon on top
         @Override
         protected void paintComponent(
                 Graphics g
@@ -798,6 +923,7 @@ public class lauriceTimerPanel extends JPanel {
             Graphics2D g2 =
                     (Graphics2D) g.create();
 
+            // Smooth edges
             g2.setRenderingHint(
                     RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON
@@ -805,6 +931,7 @@ public class lauriceTimerPanel extends JPanel {
 
             g2.setColor(CREAM);
 
+            // Cream pill background
             g2.fillRoundRect(
                     0,
                     0,
@@ -814,8 +941,10 @@ public class lauriceTimerPanel extends JPanel {
                     getHeight()
             );
 
+            // Icons are drawn in brown
             g2.setColor(BROWN);
 
+            // Pause icon: two vertical bars
             if (
                     type.equals("pause")
             ) {
@@ -839,6 +968,7 @@ public class lauriceTimerPanel extends JPanel {
                 );
             }
 
+            // Play icon: a triangle pointing right
             if (
                     type.equals("play")
             ) {
@@ -846,6 +976,7 @@ public class lauriceTimerPanel extends JPanel {
                 Polygon triangle =
                         new Polygon();
 
+                // Triangle corners (top-left, bottom-left, right tip)
                 triangle.addPoint(
                         22,
                         14
@@ -866,10 +997,12 @@ public class lauriceTimerPanel extends JPanel {
                 );
             }
 
+            // Reset icon: a circular arrow
             if (
                     type.equals("reset")
             ) {
 
+                // Thick line with rounded ends
                 g2.setStroke(
                         new BasicStroke(
                                 3f,
@@ -878,6 +1011,7 @@ public class lauriceTimerPanel extends JPanel {
                         )
                 );
 
+                // Circle drawn as an arc with a gap at the top right
                 g2.drawArc(
                         18,
                         17,
@@ -890,6 +1024,7 @@ public class lauriceTimerPanel extends JPanel {
                 Polygon arrow =
                         new Polygon();
 
+                // Small arrowhead at the end of the arc
                 arrow.addPoint(
                         39,
                         16
