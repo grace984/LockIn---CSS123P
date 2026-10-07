@@ -48,25 +48,25 @@ public class julianneThemePanel extends JPanel
     // width of the centered content column (same as the Tracker panel)
     private static final int COLUMN_W = 440;
 
-    // =========================================================
+    
     // THEME CIRCLES
-    // =========================================================
+    
 
     private final ThemeCircle[] themeCircles =
             new ThemeCircle[
                     julianneThemeManager.getThemeCount()
             ];
 
-    // =========================================================
+    
     // SELECTED THEME
-    // =========================================================
+    
 
     private int selectedTheme =
             julianneThemeManager.getSelectedTheme();
 
-    // =========================================================
+    
     // CHECKMARK ANIMATION
-    // =========================================================
+    
 
     private float checkmarkProgress = 1.0f;
 
@@ -74,9 +74,9 @@ public class julianneThemePanel extends JPanel
 
     private final Timer checkmarkTimer;
 
-    // =========================================================
+    
     // SMALL HELPERS
-    // =========================================================
+    
 
     // same font with extra letter spacing (matches the Tracker title)
     private static Font spaced(Font f, float tracking) {
@@ -93,9 +93,9 @@ public class julianneThemePanel extends JPanel
         return c;
     }
 
-    // =========================================================
+    
     // CONSTRUCTOR
-    // =========================================================
+    
 
     // Builds the Themes page and its 4-by-4 theme grid.
     public julianneThemePanel() {
@@ -283,9 +283,9 @@ public class julianneThemePanel extends JPanel
         );
     }
 
-    // =========================================================
+    
     // RESET BUTTON
-    // =========================================================
+    
 
     // Creates the control that restores the default theme.
     private JButton createResetButton() {
@@ -334,9 +334,9 @@ public class julianneThemePanel extends JPanel
         return button;
     }
 
-    // =========================================================
+    
     // THEME CHANGE CALLBACK
-    // =========================================================
+    
 
     @Override
     // Refreshes the selected checkmark when the theme changes.
@@ -364,9 +364,9 @@ public class julianneThemePanel extends JPanel
         repaint();
     }
 
-    // =========================================================
+    
     // BOX + ORNAMENT (same look as the Tracker panel)
-    // =========================================================
+    
 
     // plain rounded box, no shadow
     private static class RoundedPanel extends JPanel {
@@ -413,9 +413,9 @@ public class julianneThemePanel extends JPanel
         }
     }
 
-    // =========================================================
+    
     // THEME CIRCLE
-    // =========================================================
+    
 
     private class ThemeCircle
             extends JComponent {

@@ -64,9 +64,9 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
+    
     // WEBSITE ENDPOINT
-    // =========================================================
+    
 
 
 
@@ -137,9 +137,9 @@ public class jhenicaApiServer {
         exchange.close();
     }
 
-    // =========================================================
+    
     // RESTRICTED SITES ENDPOINT
-    // =========================================================
+    
 
     // Returns the restricted-site list as JSON.
     private void handleRestricted(
@@ -191,9 +191,9 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
+    
     // TIMER STATUS ENDPOINT
-    // =========================================================
+    
 
     // Returns the current timer status and session type.
     private void handleTimer(
@@ -252,9 +252,9 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
+    
     // WARNING MESSAGE ENDPOINT
-    // =========================================================
+    
 
     // Sends the selected warning message to the extension.
     private void handleMessage(
@@ -285,9 +285,9 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
+    
     // SELECTED SOUND ENDPOINT
-    // =========================================================
+    
 
     // Sends the saved sound preference to the extension.
     private void handleSound(
@@ -326,9 +326,9 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
+    
     // CORS
-    // =========================================================
+    
 
     // Allows the browser extension to call the local API.
     private void addCorsHeaders(
@@ -351,9 +351,9 @@ public class jhenicaApiServer {
         );
     }
 
-    // =========================================================
+    
     // SEND RESPONSE
-    // =========================================================
+    
 
     // Sends a text response back to the caller.
     private void sendResponse(
@@ -379,9 +379,9 @@ public class jhenicaApiServer {
         }
     }
 
-    // =========================================================
+    
     // JSON ESCAPE
-    // =========================================================
+    
 
     // Escapes website text so it is safe inside JSON.
     private String escapeJson(
@@ -393,18 +393,18 @@ public class jhenicaApiServer {
                 .replace("\"", "\\\"");
     }
 
-    // =========================================================
+    
     // GET CURRENT WEBSITE
-    // =========================================================
+    
 
     // Returns the most recently reported website.
     public String getCurrentWebsite() {
         return currentWebsite;
     }
 
-    // =========================================================
+    
     // STOP SERVER
-    // =========================================================
+    
 
     // Stops the local API server when the app closes.
     public void stop() {

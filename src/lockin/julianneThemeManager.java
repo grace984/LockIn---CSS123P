@@ -6,17 +6,17 @@ import java.util.List;
 
 public final class julianneThemeManager {
 
-    // =========================================================
+    
     // THEME CHANGE LISTENER
-    // =========================================================
+    
 
     public interface ThemeChangeListener {
         void themeChanged(Color[] colors);
     }
 
-    // =========================================================
+    
     // THEME DATA
-    // =========================================================
+    
 
     private static final List<Color[]> THEMES = new ArrayList<>();
 
@@ -26,9 +26,9 @@ public final class julianneThemeManager {
     // Theme 1 is the default theme.
     private static int selectedTheme = 0;
 
-    // =========================================================
+    
     // 16 THEMES
-    // =========================================================
+    
 
     static {
 
@@ -157,17 +157,17 @@ public final class julianneThemeManager {
         );
     }
 
-    // =========================================================
+    
     // PRIVATE CONSTRUCTOR
-    // =========================================================
+    
 
     private julianneThemeManager() {
         // Prevent creating instances.
     }
 
-    // =========================================================
+    
     // ADD THEME
-    // =========================================================
+    
 
     private static void addTheme(String... hexColors) {
 
@@ -183,27 +183,27 @@ public final class julianneThemeManager {
         THEMES.add(colors);
     }
 
-    // =========================================================
+    
     // GET NUMBER OF THEMES
-    // =========================================================
+    
 
     // Returns the number of themes available to the user.
     public static int getThemeCount() {
         return THEMES.size();
     }
 
-    // =========================================================
+    
     // GET SELECTED THEME INDEX
-    // =========================================================
+    
 
     // Returns the index of the selected theme.
     public static int getSelectedTheme() {
         return selectedTheme;
     }
 
-    // =========================================================
+    
     // GET THEME COLORS
-    // =========================================================
+    
 
     // Gets a copy of one theme's colors by index.
     public static Color[] getTheme(int index) {
@@ -217,18 +217,18 @@ public final class julianneThemeManager {
                 .clone();
     }
 
-    // =========================================================
+    
     // GET CURRENTLY SELECTED COLORS
-    // =========================================================
+    
 
     // Gets the colors for the currently selected theme.
     public static Color[] getSelectedColors() {
         return getTheme(selectedTheme);
     }
 
-    // =========================================================
+    
     // SELECT THEME
-    // =========================================================
+    
 
     // Selects a theme and notifies listening UI components.
     public static void selectTheme(int index) {
@@ -246,9 +246,9 @@ public final class julianneThemeManager {
         notifyListeners();
     }
 
-    // =========================================================
+    
     // RESET TO DEFAULT
-    // =========================================================
+    
 
     // Returns the selected theme to Theme 1.
     public static void resetToDefault() {
@@ -258,9 +258,9 @@ public final class julianneThemeManager {
         notifyListeners();
     }
 
-    // =========================================================
+    
     // ADD LISTENER
-    // =========================================================
+    
 
     // Registers a UI component for theme-change updates.
     public static void addListener(
@@ -276,9 +276,9 @@ public final class julianneThemeManager {
         }
     }
 
-    // =========================================================
+    
     // REMOVE LISTENER
-    // =========================================================
+    
 
     // Removes a UI component from theme-change updates.
     public static void removeListener(
@@ -288,9 +288,9 @@ public final class julianneThemeManager {
         LISTENERS.remove(listener);
     }
 
-    // =========================================================
+    
     // NOTIFY LISTENERS
-    // =========================================================
+    
 
     // Tells registered panels that the theme changed.
     private static void notifyListeners() {
@@ -311,9 +311,9 @@ public final class julianneThemeManager {
         }
     }
 
-    // =========================================================
+    
     // COLOR INTERPOLATION
-    // =========================================================
+    
 
     // Blends two colors by a chosen amount.
     public static Color interpolate(
@@ -365,9 +365,9 @@ public final class julianneThemeManager {
         );
     }
 
-    // =========================================================
+    
     // INTERPOLATE COMPLETE THEME
-    // =========================================================
+    
 
     // Blends matching colors from two themes.
     public static Color[] interpolateColors(
@@ -398,9 +398,9 @@ public final class julianneThemeManager {
         return result;
     }
 
-    // =========================================================
+    
     // COLOR TO HEX
-    // =========================================================
+    
 
     // Converts a Color into hexadecimal text.
     public static String colorToHex(

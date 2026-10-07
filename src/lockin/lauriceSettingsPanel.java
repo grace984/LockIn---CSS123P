@@ -39,9 +39,9 @@ public class lauriceSettingsPanel extends JPanel {
             + "active Work sessions. No account or personal information is required. "
             + "Your settings and preferences are stored locally on your device.";
 
-    // =========================================================
+    
     // SAVED SETTINGS
-    // =========================================================
+    
 
     private static final Preferences SETTINGS =
             Preferences.userNodeForPackage(
@@ -62,9 +62,9 @@ public class lauriceSettingsPanel extends JPanel {
         createLayout();
     }
 
-    // =========================================================
+    
     // COMPONENTS
-    // =========================================================
+    
 
     // Creates the sound and warning-message choices.
     private void createComponents() {
@@ -142,9 +142,9 @@ public class lauriceSettingsPanel extends JPanel {
         }
     }
 
-    // =========================================================
+    
     // SOUND SETTINGS
-    // =========================================================
+    
 
     // Loads the saved sound choice from local preferences.
     private int getSavedSound() {
@@ -173,10 +173,10 @@ public class lauriceSettingsPanel extends JPanel {
         }
     }
 
-    // =========================================================
+    
     // PUBLIC SOUND PREFERENCE
     // Used by jhenicaApiServer
-    // =========================================================
+    
 
     // Lets the API read the saved sound choice.
     public static int getSavedSoundPreference() {
@@ -187,9 +187,9 @@ public class lauriceSettingsPanel extends JPanel {
         );
     }
 
-    // =========================================================
+    
     // LAYOUT
-    // =========================================================
+    
 
     // Arranges the Settings sections vertically.
     private void createLayout() {
@@ -360,9 +360,9 @@ public class lauriceSettingsPanel extends JPanel {
         return l;
     }
 
-    // =========================================================
+    
     // OPTION CARD
-    // =========================================================
+    
 
     private JPanel buildOptionCard(
             OptionButton[] buttons
@@ -460,9 +460,9 @@ public class lauriceSettingsPanel extends JPanel {
         return fixed(card, 132);
     }
 
-    // =========================================================
+    
     // SMALL HELPERS
-    // =========================================================
+    
 
     private static Font spaced(
             Font f,
@@ -506,9 +506,9 @@ public class lauriceSettingsPanel extends JPanel {
         return c;
     }
 
-    // =========================================================
+    
     // WHAT THE REST OF THE APP READS
-    // =========================================================
+    
 
     // Returns the sound option selected in the UI.
     public int getSelectedSound() {
@@ -550,9 +550,9 @@ public class lauriceSettingsPanel extends JPanel {
         return 1;
     }
 
-    // =========================================================
+    
     // OLD METHODS
-    // =========================================================
+    
 
     public boolean isSoundOn() {
         return true;
@@ -570,9 +570,9 @@ public class lauriceSettingsPanel extends JPanel {
         return 5;
     }
 
-    // =========================================================
+    
     // RADIO OPTION
-    // =========================================================
+    
 
     private static class OptionButton
             extends JRadioButton {
@@ -656,9 +656,9 @@ public class lauriceSettingsPanel extends JPanel {
         }
     }
 
-    // =========================================================
+    
     // RADIO ICON
-    // =========================================================
+    
 
     private static class RadioIcon
             implements Icon {
@@ -728,9 +728,9 @@ public class lauriceSettingsPanel extends JPanel {
         }
     }
 
-    // =========================================================
+    
     // ROUNDED PANEL
-    // =========================================================
+    
 
     private static class RoundedPanel
             extends JPanel {
@@ -827,9 +827,9 @@ public class lauriceSettingsPanel extends JPanel {
         }
     }
 
-    // =========================================================
+    
     // WRAPPED TEXT
-    // =========================================================
+    
 
     private static class WrappedText
             extends JComponent {
@@ -921,9 +921,9 @@ public class lauriceSettingsPanel extends JPanel {
         }
     }
 
-    // =========================================================
+    
     // ORNAMENT DIVIDER
-    // =========================================================
+    
 
     private static class OrnamentDivider
             extends JComponent {
